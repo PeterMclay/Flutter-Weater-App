@@ -1,11 +1,10 @@
-import 'package:flutter/gestures.dart';
-import 'package:flutter/widgets.dart';
 import 'package:weatherapp/services/location.dart';
 import 'package:weatherapp/services/networking.dart';
 import 'package:intl/intl.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:weatherapp/services/keys.dart';
 
-const apiKey = '4cb003be2dc2478379f40298c5b2c422';
+const apiKey = weatherKey;
 
 class WeatherMethods {
   WeatherMethods({this.weatherData});

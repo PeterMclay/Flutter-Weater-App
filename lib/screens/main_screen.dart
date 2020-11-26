@@ -3,9 +3,8 @@ import 'package:weatherapp/services/weather.dart';
 import 'package:weatherapp/constants.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:weatherapp/main.dart';
+import 'package:weatherapp/services/keys.dart';
 
-const kGoogleApiKey = "AIzaSyCF04tmMHu1kLyxJ0q4zj1Och4M8g7k5W8";
 GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
 
 class MainScreen extends StatefulWidget {
@@ -18,7 +17,7 @@ final homeScaffoldKey = GlobalKey<ScaffoldState>();
 
 class _MainScreenState extends State<MainScreen> {
   bool citySearch = false;
-  String address = 'Poop';
+  String address;
   double lat, lng;
   int currentTemp;
   int feelsLikeTemp;
@@ -129,7 +128,7 @@ class _MainScreenState extends State<MainScreen> {
             direction: direction));
       }
     });
-    return null;
+    return 1;
   }
 
   @override
