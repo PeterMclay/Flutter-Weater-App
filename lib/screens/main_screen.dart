@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:weatherapp/services/weather.dart';
 import 'package:weatherapp/constants.dart';
+import 'package:google_maps_webservice/places.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:weatherapp/main.dart';
+
+const kGoogleApiKey = "AIzaSyCF04tmMHu1kLyxJ0q4zj1Och4M8g7k5W8";
+GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
 
 class MainScreen extends StatefulWidget {
   static const String id = 'main_screen';
@@ -8,7 +14,12 @@ class MainScreen extends StatefulWidget {
   _MainScreenState createState() => _MainScreenState();
 }
 
+final homeScaffoldKey = GlobalKey<ScaffoldState>();
+
 class _MainScreenState extends State<MainScreen> {
+  bool citySearch = false;
+  String address = 'Poop';
+  double lat, lng;
   int currentTemp;
   int feelsLikeTemp;
   int humidity, pressure, visibilty, uvi;
@@ -27,93 +38,98 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void initState() {
+    citySearch = false;
+    lat = 0;
+    lng = 0;
     super.initState();
   }
 
   Future getLocationData() async {
-    precipitationEntries.clear();
-    hourlyEntries.clear();
-    windEntries.clear();
-    WeatherData weatherData = WeatherData();
+    WeatherData weatherData =
+        WeatherData(citySearch: citySearch, latitude: lat, longitude: lng);
     await weatherData.getLocationData();
-    currentTemp = weatherData.getCurrentTemperature();
-    feelsLikeTemp = weatherData.getCurrentFeelsLikeTemperature();
-    humidity = weatherData.getCurrentHumidity();
-    pressure = weatherData.getCurrentPressure();
-    visibilty = weatherData.getCurrentVisibility();
-    uvi = weatherData.getCurrentUVI();
-    sunriseSunset = weatherData.getCurrentSunriseSunrset();
-    condition = weatherData.getCurrentCondition();
-    backgroundImage = weatherData.getCurrentBackground();
-    backgroundColor = kBackgroundColor[backgroundImage];
-
-    windData = weatherData.getCurrentWindInfo();
-    if (windData[0] >= 50) {
-      windColor = 'Gale-force';
-    } else if (windData[0] < 50 && windData[0] >= 38) {
-      windColor = 'Strong';
-    } else if (windData[0] < 38 && windData[0] >= 29) {
-      windColor = 'Fresh';
-    } else if (windData[0] < 29 && windData[0] >= 20) {
-      windColor = 'Moderate';
-    } else if (windData[0] < 20 && windData[0] >= 6) {
-      windColor = 'Light';
-    } else {
-      windColor = 'Calm';
-    }
-
-    for (int i = 1; i <= 15; i++) {
-      String time = weatherData.getFutureTime(type: 'hourly', index: i);
-      String icon = weatherData.getFutureIcon(type: 'hourly', index: i);
-      int temp = weatherData.getFutureTemperature(type: 'hourly', index: i);
-      hourlyEntries.add(HourlyForcast(time: time, icon: icon, temp: temp));
-    }
-
-    for (int i = 1; i <= 15; i++) {
-      String time = weatherData.getFutureTime(type: 'hourly', index: i);
-      int percent = weatherData.getFuturePop(type: 'hourly', index: i);
-      double amount = weatherData.getRainAmount(type: 'hourly', index: i);
-      String icon;
-      if (percent > 75) {
-        icon = '100';
-      } else if (percent <= 75 && percent > 50) {
-        icon = '75';
-      } else if (percent <= 50 && percent < 25) {
-        icon = '50';
-      } else {
-        icon = '25';
-      }
-      precipitationEntries.add(Precipitation(
-          time: time, percent: percent, icon: icon, amount: amount));
-    }
-
-    for (int i = 1; i <= 15; i++) {
-      String time = weatherData.getFutureTime(type: 'hourly', index: i);
-      List windData = weatherData.getFutureWindInfo(index: i);
-      int speed = windData[0];
-      String direction = windData[1];
-      String windColor;
-      if (speed >= 50) {
+    setState(() {
+      address = weatherData.getAddress();
+      precipitationEntries.clear();
+      hourlyEntries.clear();
+      windEntries.clear();
+      currentTemp = weatherData.getCurrentTemperature();
+      feelsLikeTemp = weatherData.getCurrentFeelsLikeTemperature();
+      humidity = weatherData.getCurrentHumidity();
+      pressure = weatherData.getCurrentPressure();
+      visibilty = weatherData.getCurrentVisibility();
+      uvi = weatherData.getCurrentUVI();
+      sunriseSunset = weatherData.getCurrentSunriseSunrset();
+      condition = weatherData.getCurrentCondition();
+      backgroundImage = weatherData.getCurrentBackground();
+      backgroundColor = kBackgroundColor[backgroundImage];
+      windData = weatherData.getCurrentWindInfo();
+      if (windData[0] >= 50) {
         windColor = 'Gale-force';
-      } else if (speed < 50 && speed >= 38) {
+      } else if (windData[0] < 50 && windData[0] >= 38) {
         windColor = 'Strong';
-      } else if (speed < 38 && speed >= 29) {
+      } else if (windData[0] < 38 && windData[0] >= 29) {
         windColor = 'Fresh';
-      } else if (speed < 29 && speed >= 20) {
+      } else if (windData[0] < 29 && windData[0] >= 20) {
         windColor = 'Moderate';
-      } else if (speed < 20 && speed >= 6) {
+      } else if (windData[0] < 20 && windData[0] >= 6) {
         windColor = 'Light';
       } else {
         windColor = 'Calm';
       }
-      windEntries.add(Wind(
-          time: time,
-          speed: speed,
-          windColor: windColor,
-          direction: direction));
-    }
 
-    return 1;
+      for (int i = 1; i <= 15; i++) {
+        String time = weatherData.getFutureTime(type: 'hourly', index: i);
+        String icon = weatherData.getFutureIcon(type: 'hourly', index: i);
+        int temp = weatherData.getFutureTemperature(type: 'hourly', index: i);
+        hourlyEntries.add(HourlyForcast(time: time, icon: icon, temp: temp));
+      }
+
+      for (int i = 1; i <= 15; i++) {
+        String time = weatherData.getFutureTime(type: 'hourly', index: i);
+        int percent = weatherData.getFuturePop(type: 'hourly', index: i);
+        double amount = weatherData.getRainAmount(type: 'hourly', index: i);
+        String icon;
+        if (percent > 75) {
+          icon = '100';
+        } else if (percent <= 75 && percent > 50) {
+          icon = '75';
+        } else if (percent <= 50 && percent < 25) {
+          icon = '50';
+        } else {
+          icon = '25';
+        }
+        precipitationEntries.add(Precipitation(
+            time: time, percent: percent, icon: icon, amount: amount));
+      }
+
+      for (int i = 1; i <= 15; i++) {
+        String time = weatherData.getFutureTime(type: 'hourly', index: i);
+        List windData = weatherData.getFutureWindInfo(index: i);
+        int speed = windData[0];
+        String direction = windData[1];
+        String windColor;
+        if (speed >= 50) {
+          windColor = 'Gale-force';
+        } else if (speed < 50 && speed >= 38) {
+          windColor = 'Strong';
+        } else if (speed < 38 && speed >= 29) {
+          windColor = 'Fresh';
+        } else if (speed < 29 && speed >= 20) {
+          windColor = 'Moderate';
+        } else if (speed < 20 && speed >= 6) {
+          windColor = 'Light';
+        } else {
+          windColor = 'Calm';
+        }
+        windEntries.add(Wind(
+            time: time,
+            speed: speed,
+            windColor: windColor,
+            direction: direction));
+      }
+    });
+    return null;
   }
 
   @override
@@ -123,17 +139,24 @@ class _MainScreenState extends State<MainScreen> {
       child: FutureBuilder(
         future: getLocationData(),
         builder: (context, snapshot) {
-          //Has Data
-
           if (snapshot.hasData) {
             return Container(
               color: backgroundColor,
               child: CustomScrollView(
                 slivers: <Widget>[
                   SliverAppBar(
+                    key: homeScaffoldKey,
+                    actions: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.search),
+                        onPressed: () {
+                          _handlePressButton();
+                        },
+                      ),
+                    ],
                     textTheme: TextTheme(headline1: kLocationTextStyle),
                     backgroundColor: backgroundColor,
-                    title: Text('Kingston, ON'),
+                    title: Text('$address'),
                     automaticallyImplyLeading: false,
                     centerTitle: true,
                     snap: false,
@@ -335,6 +358,41 @@ class _MainScreenState extends State<MainScreen> {
         },
       ),
     );
+  }
+
+  void onError(PlacesAutocompleteResponse response) {
+    homeScaffoldKey.currentState.showSnackBar(
+      SnackBar(content: Text(response.errorMessage)),
+    );
+  }
+
+  Future<void> _handlePressButton() async {
+    // show input autocomplete with selected mode
+    // then get the Prediction selected
+    print('button pressed');
+    Prediction p = await PlacesAutocomplete.show(
+      context: context,
+      apiKey: kGoogleApiKey,
+      onError: onError,
+      mode: Mode.fullscreen,
+      logo: Row(),
+      language: "en",
+      components: [
+        Component(Component.country, "ca"),
+        Component(Component.country, "us")
+      ],
+    );
+    if (p != null) {
+      PlacesDetailsResponse detail =
+          await _places.getDetailsByPlaceId(p.placeId);
+      lat = detail.result.geometry.location.lat;
+      lng = detail.result.geometry.location.lng;
+      citySearch = true;
+      print(p);
+      print('lat = $lat\nlong = $lng');
+      getLocationData();
+      //displayPrediction(p, homeScaffoldKey.currentState);
+    }
   }
 }
 

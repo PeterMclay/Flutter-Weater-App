@@ -3,6 +3,7 @@ import 'screens/main_screen.dart';
 import 'screens/demo_screen.dart';
 
 void main() {
+  //runApp(RoutesWidget());
   runApp(Weather());
 }
 
@@ -20,13 +21,5 @@ class Weather extends StatelessWidget {
         DemoScreen.id: (context) => DemoScreen(),
       },
     );
-
-    // return MaterialApp(
-    //   initialRoute: HomeScreen.id,
-    //   routes: {
-    //     HomeScreen.id: (context) => HomeScreen(),
-    //     BarChartSample3.id: (context) => BarChartSample3(),
-    //   },
-    // );
   }
 }

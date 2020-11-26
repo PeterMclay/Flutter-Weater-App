@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:weatherapp/services/location.dart';
 import 'package:weatherapp/services/networking.dart';
 import 'package:intl/intl.dart';
+import 'package:geocoder/geocoder.dart';
 
 const apiKey = '4cb003be2dc2478379f40298c5b2c422';
 
@@ -18,19 +19,34 @@ class WeatherMethods {
 
 class WeatherData {
   dynamic weatherData;
+  bool citySearch;
+  double latitude, longitude;
+  String address = 'kingston';
+  WeatherData({this.citySearch, this.latitude, this.longitude});
 
   Future<dynamic> getLocationData() async {
-    Location location = Location();
-    await location.getCurrentLocation();
-    double latitude = location.latitude;
-    double longitude = location.longitude;
+    if (!citySearch) {
+      Location location = Location();
+      await location.getCurrentLocation();
+      latitude = location.latitude;
+      longitude = location.longitude;
+    }
+    //Coordinates coordinates = Coordinates(latitude, longitude);
+    //var addresses =
+    //await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    //var first = addresses.first;
+    //address = first.subLocality;
     NetworkHelper networkHelper = NetworkHelper(
         'https://api.openweathermap.org/data/2.5/onecall?lat=$latitude&lon=$longitude&exclude=minutely&appid=$apiKey&units=metric');
     weatherData = await networkHelper.getData();
+    print('called');
     return weatherData;
   }
 
 //Current Method
+  String getAddress() {
+    return address;
+  }
 
   int getCurrentTemperature() {
     var temp = weatherData['current']['temp'];
