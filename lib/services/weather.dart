@@ -20,7 +20,7 @@ class WeatherData {
   dynamic weatherData;
   bool citySearch;
   double latitude, longitude;
-  String address = 'kingston';
+  String address;
   WeatherData({this.citySearch, this.latitude, this.longitude});
 
   Future<dynamic> getLocationData() async {
@@ -30,15 +30,15 @@ class WeatherData {
       latitude = location.latitude;
       longitude = location.longitude;
     }
-    //Coordinates coordinates = Coordinates(latitude, longitude);
-    //var addresses =
-    //await Geocoder.local.findAddressesFromCoordinates(coordinates);
-    //var first = addresses.first;
-    //address = first.subLocality;
+    Coordinates coordinates = Coordinates(latitude, longitude);
+    var addresses =
+        await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    var first = addresses.first;
+    address = first.locality + ', ' + first.adminArea;
+    print('locality = ${first.locality}');
     NetworkHelper networkHelper = NetworkHelper(
         'https://api.openweathermap.org/data/2.5/onecall?lat=$latitude&lon=$longitude&exclude=minutely&appid=$apiKey&units=metric');
     weatherData = await networkHelper.getData();
-    print('called');
     return weatherData;
   }
 

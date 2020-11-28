@@ -170,7 +170,7 @@ class _MainScreenState extends State<MainScreen> {
                     backgroundColor: backgroundColor,
                     title: Text('$address'),
                     automaticallyImplyLeading: false,
-                    centerTitle: true,
+                    //centerTitle: true,
                     snap: false,
                     floating: false,
                     pinned: true,
