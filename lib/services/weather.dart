@@ -134,13 +134,13 @@ class WeatherData {
       if (id.contains('d')) {
         icon = 'PartlyCloudyD';
       } else {
-        icon = 'PartlyCloudyN';
+        icon = 'PartlyCloudyD';
       }
     } else if (id.contains('04')) {
       if (id.contains('d')) {
         icon = 'CloudyD';
       } else {
-        icon = 'CloudyN';
+        icon = 'CloudyD';
       }
     } else if (id.contains('13')) {
       if (id.contains('d')) {

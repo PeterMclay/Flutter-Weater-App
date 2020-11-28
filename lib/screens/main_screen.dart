@@ -16,6 +16,7 @@ class MainScreen extends StatefulWidget {
 final homeScaffoldKey = GlobalKey<ScaffoldState>();
 
 class _MainScreenState extends State<MainScreen> {
+  bool refreshUI;
   bool citySearch = false;
   String address;
   double lat, lng;
@@ -37,6 +38,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void initState() {
+    refreshUI = true;
     citySearch = false;
     lat = 0;
     lng = 0;
@@ -44,90 +46,94 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future getLocationData() async {
-    WeatherData weatherData =
-        WeatherData(citySearch: citySearch, latitude: lat, longitude: lng);
-    await weatherData.getLocationData();
-    setState(() {
-      address = weatherData.getAddress();
-      precipitationEntries.clear();
-      hourlyEntries.clear();
-      windEntries.clear();
-      currentTemp = weatherData.getCurrentTemperature();
-      feelsLikeTemp = weatherData.getCurrentFeelsLikeTemperature();
-      humidity = weatherData.getCurrentHumidity();
-      pressure = weatherData.getCurrentPressure();
-      visibilty = weatherData.getCurrentVisibility();
-      uvi = weatherData.getCurrentUVI();
-      sunriseSunset = weatherData.getCurrentSunriseSunrset();
-      condition = weatherData.getCurrentCondition();
-      backgroundImage = weatherData.getCurrentBackground();
-      backgroundColor = kBackgroundColor[backgroundImage];
-      windData = weatherData.getCurrentWindInfo();
-      if (windData[0] >= 50) {
-        windColor = 'Gale-force';
-      } else if (windData[0] < 50 && windData[0] >= 38) {
-        windColor = 'Strong';
-      } else if (windData[0] < 38 && windData[0] >= 29) {
-        windColor = 'Fresh';
-      } else if (windData[0] < 29 && windData[0] >= 20) {
-        windColor = 'Moderate';
-      } else if (windData[0] < 20 && windData[0] >= 6) {
-        windColor = 'Light';
-      } else {
-        windColor = 'Calm';
-      }
-
-      for (int i = 1; i <= 15; i++) {
-        String time = weatherData.getFutureTime(type: 'hourly', index: i);
-        String icon = weatherData.getFutureIcon(type: 'hourly', index: i);
-        int temp = weatherData.getFutureTemperature(type: 'hourly', index: i);
-        hourlyEntries.add(HourlyForcast(time: time, icon: icon, temp: temp));
-      }
-
-      for (int i = 1; i <= 15; i++) {
-        String time = weatherData.getFutureTime(type: 'hourly', index: i);
-        int percent = weatherData.getFuturePop(type: 'hourly', index: i);
-        double amount = weatherData.getRainAmount(type: 'hourly', index: i);
-        String icon;
-        if (percent > 75) {
-          icon = '100';
-        } else if (percent <= 75 && percent > 50) {
-          icon = '75';
-        } else if (percent <= 50 && percent < 25) {
-          icon = '50';
-        } else {
-          icon = '25';
-        }
-        precipitationEntries.add(Precipitation(
-            time: time, percent: percent, icon: icon, amount: amount));
-      }
-
-      for (int i = 1; i <= 15; i++) {
-        String time = weatherData.getFutureTime(type: 'hourly', index: i);
-        List windData = weatherData.getFutureWindInfo(index: i);
-        int speed = windData[0];
-        String direction = windData[1];
-        String windColor;
-        if (speed >= 50) {
+    print(refreshUI);
+    if (refreshUI) {
+      WeatherData weatherData =
+          WeatherData(citySearch: citySearch, latitude: lat, longitude: lng);
+      await weatherData.getLocationData();
+      setState(() {
+        address = weatherData.getAddress();
+        precipitationEntries.clear();
+        hourlyEntries.clear();
+        windEntries.clear();
+        currentTemp = weatherData.getCurrentTemperature();
+        feelsLikeTemp = weatherData.getCurrentFeelsLikeTemperature();
+        humidity = weatherData.getCurrentHumidity();
+        pressure = weatherData.getCurrentPressure();
+        visibilty = weatherData.getCurrentVisibility();
+        uvi = weatherData.getCurrentUVI();
+        sunriseSunset = weatherData.getCurrentSunriseSunrset();
+        condition = weatherData.getCurrentCondition();
+        backgroundImage = weatherData.getCurrentBackground();
+        backgroundColor = kBackgroundColor[backgroundImage];
+        windData = weatherData.getCurrentWindInfo();
+        if (windData[0] >= 50) {
           windColor = 'Gale-force';
-        } else if (speed < 50 && speed >= 38) {
+        } else if (windData[0] < 50 && windData[0] >= 38) {
           windColor = 'Strong';
-        } else if (speed < 38 && speed >= 29) {
+        } else if (windData[0] < 38 && windData[0] >= 29) {
           windColor = 'Fresh';
-        } else if (speed < 29 && speed >= 20) {
+        } else if (windData[0] < 29 && windData[0] >= 20) {
           windColor = 'Moderate';
-        } else if (speed < 20 && speed >= 6) {
+        } else if (windData[0] < 20 && windData[0] >= 6) {
           windColor = 'Light';
         } else {
           windColor = 'Calm';
         }
-        windEntries.add(Wind(
-            time: time,
-            speed: speed,
-            windColor: windColor,
-            direction: direction));
-      }
-    });
+
+        for (int i = 1; i <= 15; i++) {
+          String time = weatherData.getFutureTime(type: 'hourly', index: i);
+          String icon = weatherData.getFutureIcon(type: 'hourly', index: i);
+          int temp = weatherData.getFutureTemperature(type: 'hourly', index: i);
+          hourlyEntries.add(HourlyForcast(time: time, icon: icon, temp: temp));
+        }
+
+        for (int i = 1; i <= 15; i++) {
+          String time = weatherData.getFutureTime(type: 'hourly', index: i);
+          int percent = weatherData.getFuturePop(type: 'hourly', index: i);
+          double amount = weatherData.getRainAmount(type: 'hourly', index: i);
+          String icon;
+          if (percent > 75) {
+            icon = '100';
+          } else if (percent <= 75 && percent > 50) {
+            icon = '75';
+          } else if (percent <= 50 && percent < 25) {
+            icon = '50';
+          } else {
+            icon = '25';
+          }
+          precipitationEntries.add(Precipitation(
+              time: time, percent: percent, icon: icon, amount: amount));
+        }
+
+        for (int i = 1; i <= 15; i++) {
+          String time = weatherData.getFutureTime(type: 'hourly', index: i);
+          List windData = weatherData.getFutureWindInfo(index: i);
+          int speed = windData[0];
+          String direction = windData[1];
+          String windColor;
+          if (speed >= 50) {
+            windColor = 'Gale-force';
+          } else if (speed < 50 && speed >= 38) {
+            windColor = 'Strong';
+          } else if (speed < 38 && speed >= 29) {
+            windColor = 'Fresh';
+          } else if (speed < 29 && speed >= 20) {
+            windColor = 'Moderate';
+          } else if (speed < 20 && speed >= 6) {
+            windColor = 'Light';
+          } else {
+            windColor = 'Calm';
+          }
+          windEntries.add(Wind(
+              time: time,
+              speed: speed,
+              windColor: windColor,
+              direction: direction));
+        }
+        refreshUI = false;
+      });
+    }
     return 1;
   }
 
@@ -146,6 +152,13 @@ class _MainScreenState extends State<MainScreen> {
                   SliverAppBar(
                     key: homeScaffoldKey,
                     actions: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.refresh),
+                        onPressed: () {
+                          refreshUI = true;
+                          refreshButton();
+                        },
+                      ),
                       IconButton(
                         icon: Icon(Icons.search),
                         onPressed: () {
@@ -359,6 +372,11 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  void refreshButton() {
+    refreshUI = true;
+    getLocationData();
+  }
+
   void onError(PlacesAutocompleteResponse response) {
     homeScaffoldKey.currentState.showSnackBar(
       SnackBar(content: Text(response.errorMessage)),
@@ -387,9 +405,10 @@ class _MainScreenState extends State<MainScreen> {
       lat = detail.result.geometry.location.lat;
       lng = detail.result.geometry.location.lng;
       citySearch = true;
-      print(p);
-      print('lat = $lat\nlong = $lng');
-      getLocationData();
+      //print(p);
+      //print('lat = $lat\nlong = $lng');
+      refreshButton();
+      //getLocationData();
       //displayPrediction(p, homeScaffoldKey.currentState);
     }
   }
