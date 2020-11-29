@@ -137,8 +137,51 @@ class _MainScreenState extends State<MainScreen> {
     return 1;
   }
 
+  Future<void> _handlePressButton() async {
+    // show input autocomplete with selected mode
+    // then get the Prediction selected
+    print('button pressed');
+    Prediction p = await PlacesAutocomplete.show(
+      context: context,
+      apiKey: kGoogleApiKey,
+      onError: onError,
+      mode: Mode.fullscreen,
+      logo: Row(),
+      language: "en",
+      components: [
+        Component(Component.country, "ca"),
+        Component(Component.country, "us")
+      ],
+    );
+    if (p != null) {
+      PlacesDetailsResponse detail =
+          await _places.getDetailsByPlaceId(p.placeId);
+      lat = detail.result.geometry.location.lat;
+      lng = detail.result.geometry.location.lng;
+      citySearch = true;
+      //print(p);
+      //print('lat = $lat\nlong = $lng');
+      refreshButton();
+      //getLocationData();
+      //displayPrediction(p, homeScaffoldKey.currentState);
+    }
+  }
+
+  void refreshButton() {
+    refreshUI = true;
+    getLocationData();
+  }
+
+  void onError(PlacesAutocompleteResponse response) {
+    homeScaffoldKey.currentState.showSnackBar(
+      SnackBar(content: Text(response.errorMessage)),
+    );
+  }
+
+  PageController controller;
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
     return Material(
       color: Color(0xFF2298da),
       child: FutureBuilder(
@@ -175,7 +218,7 @@ class _MainScreenState extends State<MainScreen> {
                     floating: false,
                     pinned: true,
                     stretch: true,
-                    expandedHeight: 725,
+                    expandedHeight: height * 0.78,
                     elevation: 0,
                     shadowColor: null,
                     flexibleSpace: FlexibleSpaceBar(
@@ -188,7 +231,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         child: Column(
                           children: <Widget>[
-                            SizedBox(height: 525),
+                            SizedBox(height: height * 0.589),
                             Text('$currentTemp°', style: kTemperatureTextStyle),
                             Text('$condition', style: kFeelsLikeTextStyle),
                             Text('Feels like $feelsLikeTemp°',
@@ -301,7 +344,7 @@ class _MainScreenState extends State<MainScreen> {
                               Column(
                                 children: <Widget>[
                                   Transform.rotate(
-                                    angle: windAngle[windData[1]],
+                                    angle: -windAngle[windData[1]],
                                     child: Icon(
                                       Icons.navigation,
                                       color: windStrength[windColor],
@@ -345,9 +388,16 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 8.0),
-
-                          SizedBox(height: 150.0),
+                          SizedBox(height: 16.0),
+                          DailyForcast(
+                            icon: 'clear_day',
+                            tempH: 16,
+                            tempL: 12,
+                            pop: 10,
+                            day: 'Mon',
+                            date: 'Nov 30',
+                          )
+                          //SizedBox(height: 150.0),
                         ],
                       ),
                     ),
@@ -370,47 +420,6 @@ class _MainScreenState extends State<MainScreen> {
         },
       ),
     );
-  }
-
-  void refreshButton() {
-    refreshUI = true;
-    getLocationData();
-  }
-
-  void onError(PlacesAutocompleteResponse response) {
-    homeScaffoldKey.currentState.showSnackBar(
-      SnackBar(content: Text(response.errorMessage)),
-    );
-  }
-
-  Future<void> _handlePressButton() async {
-    // show input autocomplete with selected mode
-    // then get the Prediction selected
-    print('button pressed');
-    Prediction p = await PlacesAutocomplete.show(
-      context: context,
-      apiKey: kGoogleApiKey,
-      onError: onError,
-      mode: Mode.fullscreen,
-      logo: Row(),
-      language: "en",
-      components: [
-        Component(Component.country, "ca"),
-        Component(Component.country, "us")
-      ],
-    );
-    if (p != null) {
-      PlacesDetailsResponse detail =
-          await _places.getDetailsByPlaceId(p.placeId);
-      lat = detail.result.geometry.location.lat;
-      lng = detail.result.geometry.location.lng;
-      citySearch = true;
-      //print(p);
-      //print('lat = $lat\nlong = $lng');
-      refreshButton();
-      //getLocationData();
-      //displayPrediction(p, homeScaffoldKey.currentState);
-    }
   }
 }
 
@@ -592,7 +601,7 @@ class Wind extends StatelessWidget {
             ),
             SizedBox(height: 8.0),
             Transform.rotate(
-              angle: windAngle[direction],
+              angle: -windAngle[direction],
               child: Icon(
                 Icons.navigation,
                 color: windStrength[windColor],
@@ -604,6 +613,66 @@ class Wind extends StatelessWidget {
               '$time',
               style: kGreyTextStyle,
             ),
+            SizedBox(width: 65),
+          ],
+        ),
+        VerticalDivider(thickness: 1.0),
+      ],
+    );
+  }
+}
+
+class DailyForcast extends StatelessWidget {
+  String day, date, icon;
+  int tempH, tempL, pop;
+  String _pop(pop) {
+    if (pop != 0) {
+      return '$pop%';
+    } else {
+      return '';
+    }
+  }
+
+  DailyForcast(
+      {this.day, this.icon, this.tempH, this.tempL, this.date, this.pop});
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Column(
+          children: <Widget>[
+            Text(
+              '$day, $date',
+              style: TextStyle(
+                decoration: null,
+                color: Colors.black,
+              ),
+            ),
+            //SizedBox(height: 8.0),
+            Row(
+              children: [
+                Text(
+                  _pop(pop),
+                  style: TextStyle(
+                    color: Colors.blue,
+                  ),
+                ),
+                Image.asset('images/$icon.png', width: 50, height: 50),
+                Column(
+                  children: [
+                    Text('$tempH°'),
+                    Text(
+                      '$tempL°',
+                      style: TextStyle(
+                        color: Color(0xFF5E5E5F),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            Text('Sunny'),
+            SizedBox(height: 8.0),
             SizedBox(width: 65),
           ],
         ),
