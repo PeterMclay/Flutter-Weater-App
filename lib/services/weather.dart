@@ -57,68 +57,14 @@ class WeatherData {
     return feelsLikeTemp.toInt();
   }
 
-  String getCurrentCondition() {
-    var id = weatherData['current']['weather'][0]['id'];
-    String currentCondition;
-    if (id == 801 || id == 802 || id == 803) {
-      currentCondition = 'Partly Cloudy';
+  String getCurrentCondition({String type, int index}) {
+    String condition;
+    if (type == 'daily') {
+      condition = weatherData['daily'][index]['weather'][0]['main'];
+    } else {
+      condition = weatherData['current']['weather'][0]['main'];
     }
-    if (id == 804) {
-      currentCondition = 'Cloudy';
-    }
-    if (id == 800) {
-      currentCondition = 'Clear';
-    }
-    if (id == 741) {
-      currentCondition = 'Foggy';
-    }
-    if (id == 600) {
-      currentCondition = 'Light Snow';
-    }
-    if (id == 601) {
-      currentCondition = 'Snow';
-    }
-    if (id == 602) {
-      currentCondition = 'Heavy Snow';
-    }
-    if (id == 611 || id == 612 || id == 613) {
-      currentCondition = 'Sleet';
-    }
-    if (id >= 615 && id <= 22) {
-      currentCondition = 'Rain and Snow';
-    }
-    if (id == 300 && id == 310 && id == 500 && id == 520) {
-      currentCondition = 'Light Rain';
-    }
-    if (id == 301 &&
-        id == 311 &&
-        id == 313 &&
-        id == 321 &&
-        id == 501 &&
-        id == 521 &&
-        id == 531) {
-      currentCondition = 'Rain';
-    }
-    if (id == 301 &&
-        id == 312 &&
-        id == 314 &&
-        id == 502 &&
-        id == 503 &&
-        id == 504 &&
-        id == 504) {
-      currentCondition = 'Heavy Rain';
-    }
-    if (id == 511) {
-      currentCondition = 'Freezing Rain';
-    }
-
-    if (id >= 200 && id <= 232) {
-      currentCondition = 'Thunderstorm';
-    }
-    if (currentCondition == null) {
-      currentCondition = 'Oh No!';
-    }
-    return currentCondition;
+    return condition;
   }
 
   String getCurrentBackground() {
@@ -247,7 +193,7 @@ class WeatherData {
     return temp.toInt();
   }
 
-  List getDailyMinDay(int index) {
+  List<int> getDailyMinDay({int index}) {
     var min = weatherData['daily'][index]['temp']['min'];
     var day = weatherData['daily'][index]['temp']['day'];
     return [min.toInt(), day.toInt()];
@@ -312,13 +258,16 @@ class WeatherData {
     } else if (id.contains('04')) {
       icon = 'cloudy_day';
     } else if (id.contains('13')) {
-      icon = 'snowy_day';
+      //icon = 'snowy_day';
+      icon = 'rainy_day';
     } else if (id.contains('09') || id.contains('10')) {
       icon = 'rainy_day';
     } else if (id.contains('11')) {
-      icon = 'thunderstorm';
+      //icon = 'thunderstorm';
+      icon = 'rainy_day';
     } else {
-      icon = 'foggy';
+      //icon = 'foggy';
+      icon = 'rainy_day';
     }
     return icon;
   }

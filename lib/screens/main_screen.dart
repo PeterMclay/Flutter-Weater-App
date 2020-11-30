@@ -35,6 +35,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Precipitation> precipitationEntries = <Precipitation>[];
   final List<HourlyForcast> hourlyEntries = <HourlyForcast>[];
   final List<Wind> windEntries = <Wind>[];
+  final List<DailyForcast> dailyForcastEntries = <DailyForcast>[];
 
   @override
   void initState() {
@@ -46,7 +47,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future getLocationData() async {
-    print(refreshUI);
     if (refreshUI) {
       WeatherData weatherData =
           WeatherData(citySearch: citySearch, latitude: lat, longitude: lng);
@@ -56,6 +56,7 @@ class _MainScreenState extends State<MainScreen> {
         precipitationEntries.clear();
         hourlyEntries.clear();
         windEntries.clear();
+        dailyForcastEntries.clear();
         currentTemp = weatherData.getCurrentTemperature();
         feelsLikeTemp = weatherData.getCurrentFeelsLikeTemperature();
         humidity = weatherData.getCurrentHumidity();
@@ -63,7 +64,7 @@ class _MainScreenState extends State<MainScreen> {
         visibilty = weatherData.getCurrentVisibility();
         uvi = weatherData.getCurrentUVI();
         sunriseSunset = weatherData.getCurrentSunriseSunrset();
-        condition = weatherData.getCurrentCondition();
+        condition = weatherData.getCurrentCondition(type: 'current', index: 0);
         backgroundImage = weatherData.getCurrentBackground();
         backgroundColor = kBackgroundColor[backgroundImage];
         windData = weatherData.getCurrentWindInfo();
@@ -81,6 +82,31 @@ class _MainScreenState extends State<MainScreen> {
           windColor = 'Calm';
         }
 
+        // String pcondition =
+        //     weatherData.getCurrentCondition(type: 'daily', index: 0);
+        // print('Yo: $pcondition');
+
+        //Daily Forcast Entry Builder
+        for (int i = 0; i <= 7; i++) {
+          String date = weatherData.getFutureTime(type: 'daily', index: i);
+          int pop = weatherData.getFuturePop(type: 'daily', index: i);
+          List<int> temp = weatherData.getDailyMinDay(index: i);
+          String icon = weatherData.getFutureIcon(type: 'daily', index: i);
+          String condition =
+              weatherData.getCurrentCondition(type: 'daily', index: i);
+          if (i == 0) {
+            date = 'Today';
+          }
+          dailyForcastEntries.add(DailyForcast(
+              date: date,
+              pop: pop,
+              tempL: temp[0],
+              tempH: temp[1],
+              icon: icon,
+              condition: condition));
+        }
+
+        //Hourly Temp Builder
         for (int i = 1; i <= 15; i++) {
           String time = weatherData.getFutureTime(type: 'hourly', index: i);
           String icon = weatherData.getFutureIcon(type: 'hourly', index: i);
@@ -88,6 +114,7 @@ class _MainScreenState extends State<MainScreen> {
           hourlyEntries.add(HourlyForcast(time: time, icon: icon, temp: temp));
         }
 
+        //Hourly Rain Builder
         for (int i = 1; i <= 15; i++) {
           String time = weatherData.getFutureTime(type: 'hourly', index: i);
           int percent = weatherData.getFuturePop(type: 'hourly', index: i);
@@ -106,6 +133,7 @@ class _MainScreenState extends State<MainScreen> {
               time: time, percent: percent, icon: icon, amount: amount));
         }
 
+        //Hourly Wind Builder
         for (int i = 1; i <= 15; i++) {
           String time = weatherData.getFutureTime(type: 'hourly', index: i);
           List windData = weatherData.getFutureWindInfo(index: i);
@@ -388,15 +416,29 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 16.0),
-                          DailyForcast(
-                            icon: 'clear_day',
-                            tempH: 16,
-                            tempL: 12,
-                            pop: 10,
-                            day: 'Mon',
-                            date: 'Nov 30',
-                          )
+                          SizedBox(height: 8.0),
+                          Divider(
+                            thickness: 1.0,
+                          ),
+                          Container(
+                            child:
+                                Text('Daily Forcast', style: kBlackTextStyle),
+                          ),
+                          SizedBox(height: 8.0),
+                          Container(
+                            child: SizedBox(
+                              height: 300.0,
+                              child: ListView.builder(
+                                padding: EdgeInsets.all(0),
+                                itemCount: dailyForcastEntries.length,
+                                scrollDirection: Axis.vertical,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return dailyForcastEntries[index];
+                                },
+                              ),
+                            ),
+                          ),
+
                           //SizedBox(height: 150.0),
                         ],
                       ),
@@ -623,7 +665,7 @@ class Wind extends StatelessWidget {
 }
 
 class DailyForcast extends StatelessWidget {
-  String day, date, icon;
+  String date, icon, condition;
   int tempH, tempL, pop;
   String _pop(pop) {
     if (pop != 0) {
@@ -634,49 +676,66 @@ class DailyForcast extends StatelessWidget {
   }
 
   DailyForcast(
-      {this.day, this.icon, this.tempH, this.tempL, this.date, this.pop});
+      {this.icon, this.tempH, this.tempL, this.date, this.pop, this.condition});
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Column(
-          children: <Widget>[
-            Text(
-              '$day, $date',
-              style: TextStyle(
-                decoration: null,
-                color: Colors.black,
-              ),
-            ),
-            //SizedBox(height: 8.0),
-            Row(
-              children: [
-                Text(
-                  _pop(pop),
-                  style: TextStyle(
-                    color: Colors.blue,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$date',
+                    style: kSmallBlackTextStyle,
                   ),
-                ),
-                Image.asset('images/$icon.png', width: 50, height: 50),
-                Column(
+                  Text(
+                    '$condition',
+                    style: kExtraTextStyle,
+                  ),
+                ],
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text('$tempH°'),
                     Text(
-                      '$tempL°',
+                      _pop(pop),
                       style: TextStyle(
-                        color: Color(0xFF5E5E5F),
-                      ),
+                          color: Colors.lightBlue,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16),
+                    ),
+                    SizedBox(width: 8.0),
+                    Image.asset('images/$icon.png', width: 50, height: 50),
+                    SizedBox(width: 8.0),
+                    Column(
+                      children: [
+                        Text(
+                          '$tempH°',
+                          style: kSmallBlackTextStyle,
+                        ),
+                        Text(
+                          '$tempL°',
+                          style: kExtraTextStyle,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-            Text('Sunny'),
-            SizedBox(height: 8.0),
-            SizedBox(width: 65),
-          ],
+              ),
+            ],
+          ),
         ),
-        VerticalDivider(thickness: 1.0),
+        Divider(
+          thickness: 0.5,
+          indent: 5.0,
+          endIndent: 5.0,
+        ),
       ],
     );
   }
