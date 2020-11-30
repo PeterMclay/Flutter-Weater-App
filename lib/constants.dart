@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-const kLocationTextStyle =
-    TextStyle(fontSize: 25.0, fontWeight: FontWeight.w400, color: Colors.black);
-
 const kTemperatureTextStyle = TextStyle(
   fontSize: 40.0,
   fontWeight: FontWeight.w600,
+  color: Colors.white,
+);
+const kFeelsLikeTextStyle = TextStyle(
+  fontSize: 14.0,
+  fontWeight: FontWeight.w400,
   color: Colors.white,
 );
 
@@ -45,26 +47,14 @@ const windAngle = {
   'South West': (315 * pi / 180),
 };
 
-const kFeelsLikeTextStyle = TextStyle(
-  fontSize: 16.0,
-  fontWeight: FontWeight.w400,
-  color: Colors.white,
-);
-
-const kMainTextStyle = TextStyle(fontSize: 18, color: Color(0xFF5E5E5F));
+const kMainTextStyle = TextStyle(fontSize: 14, color: Color(0xFF5E5E5F));
 
 const kBlackTextStyle = TextStyle(
-  fontSize: 18.0,
-  fontWeight: FontWeight.w400,
+  fontSize: 14.0,
+  //fontWeight: FontWeight.w400,
 );
-const kGreyTextStyle = TextStyle(
-    color: const Color(0xFF5E5E5F), fontWeight: FontWeight.w400, fontSize: 14);
+const kGreyTextStyle = TextStyle(color: const Color(0xFF5E5E5F));
 
-const kSmallBlackTextStyle =
-    TextStyle(color: Colors.black, fontWeight: FontWeight.w400, fontSize: 16);
+//const kSmallBlackTextStyle = TextStyle(color: Colors.black);
 
-const kExtraTextStyle = TextStyle(
-  fontSize: 16,
-  fontWeight: FontWeight.w400,
-  color: Color(0xFF5E5E5F),
-);
+const kTitleTextStyle = TextStyle(fontWeight: FontWeight.w600);

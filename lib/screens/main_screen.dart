@@ -29,6 +29,7 @@ class _MainScreenState extends State<MainScreen> {
   List windData;
   String windColor;
   Color backgroundColor;
+  String displayDate;
 
   String wind = 'Calm';
   String angle = 'North East';
@@ -95,6 +96,7 @@ class _MainScreenState extends State<MainScreen> {
           String condition =
               weatherData.getCurrentCondition(type: 'daily', index: i);
           if (i == 0) {
+            displayDate = date;
             date = 'Today';
           }
           dailyForcastEntries.add(DailyForcast(
@@ -111,7 +113,8 @@ class _MainScreenState extends State<MainScreen> {
           String time = weatherData.getFutureTime(type: 'hourly', index: i);
           String icon = weatherData.getFutureIcon(type: 'hourly', index: i);
           int temp = weatherData.getFutureTemperature(type: 'hourly', index: i);
-          hourlyEntries.add(HourlyForcast(time: time, icon: icon, temp: temp));
+          hourlyEntries.add(
+              HourlyForcast(time: time.toLowerCase(), icon: icon, temp: temp));
         }
 
         //Hourly Rain Builder
@@ -130,7 +133,10 @@ class _MainScreenState extends State<MainScreen> {
             icon = '25';
           }
           precipitationEntries.add(Precipitation(
-              time: time, percent: percent, icon: icon, amount: amount));
+              time: time.toLowerCase(),
+              percent: percent,
+              icon: icon,
+              amount: amount));
         }
 
         //Hourly Wind Builder
@@ -154,7 +160,7 @@ class _MainScreenState extends State<MainScreen> {
             windColor = 'Calm';
           }
           windEntries.add(Wind(
-              time: time,
+              time: time.toLowerCase(),
               speed: speed,
               windColor: windColor,
               direction: direction));
@@ -237,7 +243,6 @@ class _MainScreenState extends State<MainScreen> {
                         },
                       ),
                     ],
-                    textTheme: TextTheme(headline1: kLocationTextStyle),
                     backgroundColor: backgroundColor,
                     title: Text('$address'),
                     automaticallyImplyLeading: false,
@@ -246,7 +251,7 @@ class _MainScreenState extends State<MainScreen> {
                     floating: false,
                     pinned: true,
                     stretch: true,
-                    expandedHeight: height * 0.78,
+                    expandedHeight: height * 0.75,
                     elevation: 0,
                     shadowColor: null,
                     flexibleSpace: FlexibleSpaceBar(
@@ -259,7 +264,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         child: Column(
                           children: <Widget>[
-                            SizedBox(height: height * 0.589),
+                            SizedBox(height: height * 0.575),
                             Text('$currentTemp°', style: kTemperatureTextStyle),
                             Text('$condition', style: kFeelsLikeTextStyle),
                             Text('Feels like $feelsLikeTemp°',
@@ -272,26 +277,32 @@ class _MainScreenState extends State<MainScreen> {
                   SliverFillRemaining(
                     hasScrollBody: false,
                     child: Container(
-                      padding: EdgeInsets.only(left: 5.0, right: 5.0),
+                      padding: EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(30.0),
                           topRight: Radius.circular(30.0),
                         ),
-                        color: Color(0xFFE6E6E5),
+                        //color: Color(0xFFE6E6E5),
+                        color: Colors.white,
                       ),
                       child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 4.0),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(2.0)),
-                              color: Colors.grey[400],
+                          Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(2.0)),
+                                color: Colors.grey[400],
+                              ),
+                              height: 2.0,
+                              width: 80.0,
                             ),
-                            height: 2.0,
-                            width: 80.0,
                           ),
+                          SizedBox(height: 16.0),
+                          Text('$displayDate', style: kTitleTextStyle),
                           SizedBox(height: 16.0),
                           Container(
                             child: SizedBox(
@@ -305,16 +316,16 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 4.0),
+                          SizedBox(height: 16.0),
                           Divider(
                             thickness: 1.0,
                           ),
+                          SizedBox(height: 16.0),
                           Container(
-                            child: Text('Current Details',
-                                style: kBlackTextStyle,
-                                textAlign: TextAlign.left),
+                            child:
+                                Text('Current Details', style: kTitleTextStyle),
                           ),
-                          SizedBox(height: 8.0),
+                          SizedBox(height: 16.0),
                           Container(
                             child: CurrentDetails(
                               humidity: humidity,
@@ -325,16 +336,16 @@ class _MainScreenState extends State<MainScreen> {
                               sunset: sunriseSunset[1],
                             ),
                           ),
-                          SizedBox(height: 8.0),
+                          SizedBox(height: 16.0),
                           Divider(
                             thickness: 1.0,
                           ),
+                          SizedBox(height: 16.0),
                           Container(
-                            child: Text('Precipitation',
-                                style: kBlackTextStyle,
-                                textAlign: TextAlign.left),
+                            child:
+                                Text('Precipitation', style: kTitleTextStyle),
                           ),
-                          SizedBox(height: 8.0),
+                          SizedBox(height: 16.0),
                           Container(
                             child: SizedBox(
                               height: 110.0,
@@ -347,25 +358,22 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 8.0),
+                          SizedBox(height: 16.0),
                           Divider(
                             thickness: 1.0,
                           ),
+                          SizedBox(height: 16.0),
                           Container(
-                            child: Text('Wind', style: kBlackTextStyle),
+                            child: Text('Wind', style: kTitleTextStyle),
                           ),
-                          SizedBox(height: 8.0),
-
-                          ////////////////////////// WIND  ////////////////////////////////
+                          SizedBox(height: 16.0),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
                                 '${windData[0]}',
                                 style: TextStyle(
                                   fontSize: 40.0,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black,
+                                  color: windStrength[windColor],
                                 ),
                               ),
                               SizedBox(width: 4.0),
@@ -381,19 +389,16 @@ class _MainScreenState extends State<MainScreen> {
                                   ),
                                   Text(
                                     'km/h',
-                                    style: TextStyle(
-                                        color: Color(0xFF5E5E5F),
-                                        fontSize: 12.0),
+                                    style: kGreyTextStyle,
                                   ),
                                 ],
                               ),
-                              SizedBox(width: 16.0),
+                              SizedBox(width: 24.0),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
                                   Text(
                                     windColor,
-                                    style: kSmallBlackTextStyle,
                                   ),
                                   Text(
                                     'From ${windData[1]}',
@@ -403,7 +408,7 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 8.0),
+                          SizedBox(height: 16.0),
                           Container(
                             child: SizedBox(
                               height: 75.0,
@@ -416,15 +421,16 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 8.0),
+                          SizedBox(height: 16.0),
                           Divider(
                             thickness: 1.0,
                           ),
+                          SizedBox(height: 16.0),
                           Container(
                             child:
-                                Text('Daily Forcast', style: kBlackTextStyle),
+                                Text('Daily Forcast', style: kTitleTextStyle),
                           ),
-                          SizedBox(height: 8.0),
+                          SizedBox(height: 16.0),
                           Container(
                             child: SizedBox(
                               height: 300.0,
@@ -479,11 +485,6 @@ class HourlyForcast extends StatelessWidget {
           children: <Widget>[
             Text(
               '$temp°',
-              style: TextStyle(
-                  decoration: null,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14),
             ),
             SizedBox(height: 8.0),
             Image.asset('images/$icon.png', width: 50, height: 50),
@@ -495,7 +496,7 @@ class HourlyForcast extends StatelessWidget {
             SizedBox(width: 65),
           ],
         ),
-        VerticalDivider(thickness: 1.0),
+        VerticalDivider(thickness: 0.5),
       ],
     );
   }
@@ -515,19 +516,10 @@ class Precipitation extends StatelessWidget {
           children: <Widget>[
             Text(
               '$percent%',
-              style: TextStyle(
-                  decoration: null,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14),
             ),
             Text(
               '${amount}mm',
-              style: TextStyle(
-                  decoration: null,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 12),
+              style: TextStyle(color: Colors.lightBlue),
             ),
             Image.asset('images/$icon.png', width: 50, height: 50),
             SizedBox(height: 4.0),
@@ -538,7 +530,7 @@ class Precipitation extends StatelessWidget {
             SizedBox(width: 65),
           ],
         ),
-        VerticalDivider(thickness: 1.0),
+        VerticalDivider(thickness: 0.5),
       ],
     );
   }
@@ -557,65 +549,27 @@ class CurrentDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Column(
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text('Humidity', style: kGreyTextStyle),
-                Text('$humidity%', style: kSmallBlackTextStyle),
-              ],
-            ),
-            Column(
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text('Pressure', style: kGreyTextStyle),
-                Text('$pressure mb', style: kSmallBlackTextStyle),
-              ],
-            ),
+            Text('Humidity', style: kGreyTextStyle),
+            Text('Pressure', style: kGreyTextStyle),
+            Text('Visibility', style: kGreyTextStyle),
+            Text('UV Index', style: kGreyTextStyle),
+            Text('Sunrise/sunset', style: kGreyTextStyle),
           ],
         ),
-        SizedBox(height: 5.0),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Column(
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text('Visibility', style: kGreyTextStyle),
-                Text('$visibility km', style: kSmallBlackTextStyle),
-              ],
-            ),
-            Column(
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text('UV Index', style: kGreyTextStyle),
-                Text('$uvIndex, low', style: kSmallBlackTextStyle),
-              ],
-            ),
-          ],
-        ),
-        SizedBox(height: 5.0),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Column(
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text('Sunrise', style: kGreyTextStyle),
-                Text('$sunrise', style: kSmallBlackTextStyle),
-              ],
-            ),
-            Column(
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text('Sunset', style: kGreyTextStyle),
-                Text('$sunset', style: kSmallBlackTextStyle),
-              ],
-            ),
+            Text('$humidity'),
+            Text('$pressure'),
+            Text('$visibility'),
+            Text('$uvIndex'),
+            Text('${sunrise.toLowerCase()} / ${sunset.toLowerCase()}'),
           ],
         ),
       ],
@@ -633,14 +587,7 @@ class Wind extends StatelessWidget {
       children: [
         Column(
           children: <Widget>[
-            Text(
-              '$speed km/h',
-              style: TextStyle(
-                  decoration: null,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14),
-            ),
+            Text('$speed km/h'),
             SizedBox(height: 8.0),
             Transform.rotate(
               angle: -windAngle[direction],
@@ -658,7 +605,7 @@ class Wind extends StatelessWidget {
             SizedBox(width: 65),
           ],
         ),
-        VerticalDivider(thickness: 1.0),
+        VerticalDivider(thickness: 0.5),
       ],
     );
   }
@@ -681,55 +628,45 @@ class DailyForcast extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('$date'),
+                Text(
+                  '$condition',
+                  style: kGreyTextStyle,
+                ),
+              ],
+            ),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    '$date',
-                    style: kSmallBlackTextStyle,
+                    _pop(pop),
+                    style: TextStyle(
+                      color: Colors.lightBlue,
+                    ),
                   ),
-                  Text(
-                    '$condition',
-                    style: kExtraTextStyle,
+                  SizedBox(width: 8.0),
+                  Image.asset('images/$icon.png', width: 50, height: 50),
+                  SizedBox(width: 8.0),
+                  Column(
+                    children: [
+                      Text('$tempH°'),
+                      Text(
+                        '$tempL°',
+                        style: kGreyTextStyle,
+                      ),
+                    ],
                   ),
                 ],
               ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      _pop(pop),
-                      style: TextStyle(
-                          color: Colors.lightBlue,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 16),
-                    ),
-                    SizedBox(width: 8.0),
-                    Image.asset('images/$icon.png', width: 50, height: 50),
-                    SizedBox(width: 8.0),
-                    Column(
-                      children: [
-                        Text(
-                          '$tempH°',
-                          style: kSmallBlackTextStyle,
-                        ),
-                        Text(
-                          '$tempL°',
-                          style: kExtraTextStyle,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
         Divider(
           thickness: 0.5,

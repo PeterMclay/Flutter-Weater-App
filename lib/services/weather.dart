@@ -103,7 +103,7 @@ class WeatherData {
     } else if (id.contains('11')) {
       icon = 'thunderstorm';
     } else {
-      icon = 'foggy';
+      icon = 'RainyD';
     }
     return icon;
   }
