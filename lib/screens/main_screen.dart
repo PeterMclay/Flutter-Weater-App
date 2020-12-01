@@ -4,6 +4,7 @@ import 'package:weatherapp/constants.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:weatherapp/services/keys.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
 
@@ -18,6 +19,7 @@ final homeScaffoldKey = GlobalKey<ScaffoldState>();
 class _MainScreenState extends State<MainScreen> {
   bool refreshUI;
   bool citySearch = false;
+  IconData gpsOn = Icons.gps_fixed;
   String address;
   double lat, lng;
   int currentTemp;
@@ -82,10 +84,6 @@ class _MainScreenState extends State<MainScreen> {
         } else {
           windColor = 'Calm';
         }
-
-        // String pcondition =
-        //     weatherData.getCurrentCondition(type: 'daily', index: 0);
-        // print('Yo: $pcondition');
 
         //Daily Forcast Entry Builder
         for (int i = 0; i <= 7; i++) {
@@ -174,11 +172,10 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _handlePressButton() async {
     // show input autocomplete with selected mode
     // then get the Prediction selected
-    print('button pressed');
     Prediction p = await PlacesAutocomplete.show(
       context: context,
       apiKey: kGoogleApiKey,
-      onError: onError,
+      //onError: onError,
       mode: Mode.fullscreen,
       logo: Row(),
       language: "en",
@@ -192,18 +189,22 @@ class _MainScreenState extends State<MainScreen> {
           await _places.getDetailsByPlaceId(p.placeId);
       lat = detail.result.geometry.location.lat;
       lng = detail.result.geometry.location.lng;
+      setState(() {
+        gpsOn = Icons.gps_not_fixed;
+      });
       citySearch = true;
-      //print(p);
-      //print('lat = $lat\nlong = $lng');
-      refreshButton();
-      //getLocationData();
-      //displayPrediction(p, homeScaffoldKey.currentState);
+      refreshUI = true;
+      getLocationData();
     }
   }
 
-  void refreshButton() {
+  void _gpsButton() async {
     refreshUI = true;
-    getLocationData();
+    citySearch = false;
+    await getLocationData();
+    setState(() {
+      gpsOn = Icons.gps_fixed;
+    });
   }
 
   void onError(PlacesAutocompleteResponse response) {
@@ -212,28 +213,42 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+
+  void _onRefresh() async {
+    refreshUI = true;
+    await getLocationData();
+    //await Future.delayed(Duration(milliseconds: 1000));
+    print('onRefresh Called');
+    _refreshController.refreshCompleted();
+  }
+
   PageController controller;
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     return Material(
-      color: Color(0xFF2298da),
+      color: backgroundColor,
       child: FutureBuilder(
         future: getLocationData(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Container(
-              color: backgroundColor,
+            return SmartRefresher(
+              enablePullUp: false,
+              enablePullDown: true,
+              header: MaterialClassicHeader(),
+              controller: _refreshController,
+              onRefresh: _onRefresh,
               child: CustomScrollView(
                 slivers: <Widget>[
                   SliverAppBar(
                     key: homeScaffoldKey,
                     actions: <Widget>[
                       IconButton(
-                        icon: Icon(Icons.refresh),
+                        icon: Icon(gpsOn),
                         onPressed: () {
-                          refreshUI = true;
-                          refreshButton();
+                          _gpsButton();
                         },
                       ),
                       IconButton(
