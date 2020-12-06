@@ -272,14 +272,14 @@ class _MainScreenState extends State<MainScreen> {
                     ],
                     backgroundColor: kColorDay,
                     //backgroundColor: backgroundColor,
-                    title: Text('$address'),
+                    //title: Text('$address'),
                     automaticallyImplyLeading: false,
                     //centerTitle: true,
                     snap: false,
                     floating: false,
                     pinned: true,
                     stretch: true,
-                    expandedHeight: height * 0.75,
+                    expandedHeight: height * 0.72,
                     elevation: 0,
                     shadowColor: null,
                     flexibleSpace: FlexibleSpaceBar(
@@ -287,15 +287,133 @@ class _MainScreenState extends State<MainScreen> {
                       background: Container(
                         child: Column(
                           children: <Widget>[
-                            SizedBox(height: height * 0.3),
+                            SizedBox(height: height * 0.1),
+                            Text(
+                              '$address',
+                              style: TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontSize: 24,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                                '${kWeatherCondition[condition][0]}, Feels Like $feelsLikeTemp°',
+                                style: kFeelsLikeTextStyle),
+                            SizedBox(height: 16.0),
+                            Text('$currentTemp°', style: kTemperatureTextStyle),
+                            SizedBox(height: 16.0),
                             SvgPicture.asset(
                               'assets/images/${kWeatherCondition[condition][1]}.svg',
+                              width: 200,
                             ),
-                            Text('$currentTemp°', style: kTemperatureTextStyle),
-                            Text('${kWeatherCondition[condition][0]}',
-                                style: kFeelsLikeTextStyle),
-                            Text('Feels like $feelsLikeTemp°',
-                                style: kFeelsLikeTextStyle),
+                            SizedBox(height: 64),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Column(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/humidity.svg',
+                                      width: 20,
+                                      height: 20,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(height: 8.0),
+                                    Text(
+                                      'Humidity',
+                                      style: kWhiteTextStyle,
+                                    ),
+                                    Text(
+                                      '$humidity%',
+                                      style: kFeelsLikeTextStyle,
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/pressure.svg',
+                                      width: 20,
+                                      height: 20,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(height: 8.0),
+                                    Text(
+                                      'Pressure',
+                                      style: kWhiteTextStyle,
+                                    ),
+                                    Text(
+                                      '${pressure}mBar',
+                                      style: kFeelsLikeTextStyle,
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/wind.svg',
+                                      width: 20,
+                                      height: 20,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(height: 8.0),
+                                    Text(
+                                      'Wind',
+                                      style: kWhiteTextStyle,
+                                    ),
+                                    Text(
+                                      '${windData[0]}km/h',
+                                      style: kFeelsLikeTextStyle,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                Column(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/sunrise.svg',
+                                      width: 20,
+                                      height: 20,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(height: 8.0),
+                                    Text(
+                                      'Sunrise',
+                                      style: kWhiteTextStyle,
+                                    ),
+                                    Text(
+                                      '${sunriseSunset[0]}',
+                                      style: kFeelsLikeTextStyle,
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/sunset.svg',
+                                      width: 20,
+                                      height: 20,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(height: 8.0),
+                                    Text(
+                                      'Sunset',
+                                      style: kWhiteTextStyle,
+                                    ),
+                                    Text(
+                                      '${sunriseSunset[0]}',
+                                      style: kFeelsLikeTextStyle,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -322,10 +440,10 @@ class _MainScreenState extends State<MainScreen> {
                               decoration: BoxDecoration(
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(2.0)),
-                                color: Colors.grey[400],
+                                color: kColorDay,
                               ),
                               height: 2.0,
-                              width: 80.0,
+                              width: 40.0,
                             ),
                           ),
                           SizedBox(height: 16.0),
@@ -341,26 +459,6 @@ class _MainScreenState extends State<MainScreen> {
                                   return hourlyEntries[index];
                                 },
                               ),
-                            ),
-                          ),
-                          SizedBox(height: 16.0),
-                          Divider(
-                            thickness: 1.0,
-                          ),
-                          SizedBox(height: 16.0),
-                          Container(
-                            child:
-                                Text('Current Details', style: kTitleTextStyle),
-                          ),
-                          SizedBox(height: 16.0),
-                          Container(
-                            child: CurrentDetails(
-                              humidity: humidity,
-                              pressure: pressure,
-                              visibility: visibilty,
-                              uvIndex: uvi,
-                              sunrise: sunriseSunset[0],
-                              sunset: sunriseSunset[1],
                             ),
                           ),
                           SizedBox(height: 16.0),

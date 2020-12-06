@@ -2,14 +2,21 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 const kTemperatureTextStyle = TextStyle(
-  fontSize: 40.0,
-  fontWeight: FontWeight.w600,
+  fontSize: 70.0,
+  //fontWeight: FontWeight.w600,
   color: Colors.white,
   fontFamily: 'Nunito',
 );
 const kFeelsLikeTextStyle = TextStyle(
   fontSize: 14.0,
-  fontWeight: FontWeight.w400,
+  //fontWeight: FontWeight.w400,
+  color: Color(0xFFEEEEEE),
+  fontFamily: 'Nunito',
+);
+
+const kWhiteTextStyle = TextStyle(
+  fontSize: 14.0,
+  fontWeight: FontWeight.w600,
   color: Colors.white,
   fontFamily: 'Nunito',
 );
