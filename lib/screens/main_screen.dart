@@ -5,6 +5,7 @@ import 'package:google_maps_webservice/places.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:weatherapp/services/keys.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
 
@@ -26,7 +27,7 @@ class _MainScreenState extends State<MainScreen> {
   int feelsLikeTemp;
   int humidity, pressure, visibilty, uvi;
   List<String> sunriseSunset;
-  String condition;
+  int condition;
   String backgroundImage;
   List windData;
   String windColor;
@@ -91,7 +92,7 @@ class _MainScreenState extends State<MainScreen> {
           int pop = weatherData.getFuturePop(type: 'daily', index: i);
           List<int> temp = weatherData.getDailyMinDay(index: i);
           String icon = weatherData.getFutureIcon(type: 'daily', index: i);
-          String condition =
+          int condition =
               weatherData.getCurrentCondition(type: 'daily', index: i);
           if (i == 0) {
             displayDate = date;
@@ -102,17 +103,27 @@ class _MainScreenState extends State<MainScreen> {
               pop: pop,
               tempL: temp[0],
               tempH: temp[1],
-              icon: icon,
-              condition: condition));
+              icon: kWeatherCondition[condition][1],
+              condition: kWeatherCondition[condition][0]));
         }
 
         //Hourly Temp Builder
-        for (int i = 1; i <= 15; i++) {
+        for (int i = 0; i <= 15; i++) {
           String time = weatherData.getFutureTime(type: 'hourly', index: i);
-          String icon = weatherData.getFutureIcon(type: 'hourly', index: i);
+          if (i == 0) {
+            time = 'Now';
+          } else {
+            time = time.toLowerCase();
+          }
+          int condition =
+              weatherData.getCurrentCondition(type: 'hourly', index: i);
           int temp = weatherData.getFutureTemperature(type: 'hourly', index: i);
-          hourlyEntries.add(
-              HourlyForcast(time: time.toLowerCase(), icon: icon, temp: temp));
+          hourlyEntries.add(HourlyForcast(
+            time: time,
+            icon: kWeatherCondition[condition][1],
+            temp: temp,
+            condition: kWeatherCondition[condition][0],
+          ));
         }
 
         //Hourly Rain Builder
@@ -229,7 +240,8 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     return Material(
-      color: backgroundColor,
+      color: kColorDay,
+      //color: backgroundColor,
       child: FutureBuilder(
         future: getLocationData(),
         builder: (context, snapshot) {
@@ -258,7 +270,8 @@ class _MainScreenState extends State<MainScreen> {
                         },
                       ),
                     ],
-                    backgroundColor: backgroundColor,
+                    backgroundColor: kColorDay,
+                    //backgroundColor: backgroundColor,
                     title: Text('$address'),
                     automaticallyImplyLeading: false,
                     //centerTitle: true,
@@ -272,16 +285,15 @@ class _MainScreenState extends State<MainScreen> {
                     flexibleSpace: FlexibleSpaceBar(
                       collapseMode: CollapseMode.parallax,
                       background: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: AssetImage('images/$backgroundImage.png'),
-                              fit: BoxFit.cover),
-                        ),
                         child: Column(
                           children: <Widget>[
-                            SizedBox(height: height * 0.575),
+                            SizedBox(height: height * 0.3),
+                            SvgPicture.asset(
+                              'assets/images/${kWeatherCondition[condition][1]}.svg',
+                            ),
                             Text('$currentTemp°', style: kTemperatureTextStyle),
-                            Text('$condition', style: kFeelsLikeTextStyle),
+                            Text('${kWeatherCondition[condition][0]}',
+                                style: kFeelsLikeTextStyle),
                             Text('Feels like $feelsLikeTemp°',
                                 style: kFeelsLikeTextStyle),
                           ],
@@ -321,7 +333,7 @@ class _MainScreenState extends State<MainScreen> {
                           SizedBox(height: 16.0),
                           Container(
                             child: SizedBox(
-                              height: 115.0,
+                              height: 140.0,
                               child: ListView.builder(
                                 itemCount: hourlyEntries.length,
                                 scrollDirection: Axis.horizontal,
@@ -489,9 +501,9 @@ class _MainScreenState extends State<MainScreen> {
 //  Classes //
 
 class HourlyForcast extends StatelessWidget {
-  String time, icon;
+  String time, icon, condition;
   int temp;
-  HourlyForcast({this.time, this.icon, this.temp});
+  HourlyForcast({this.time, this.icon, this.temp, this.condition});
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -499,19 +511,37 @@ class HourlyForcast extends StatelessWidget {
         Column(
           children: <Widget>[
             Text(
-              '$temp°',
-            ),
-            SizedBox(height: 8.0),
-            Image.asset('images/$icon.png', width: 50, height: 50),
-            SizedBox(height: 8.0),
-            Text(
               '$time',
-              style: kGreyTextStyle,
+              style: kBlackTextStyle,
             ),
-            SizedBox(width: 65),
+            SizedBox(height: 16.0),
+            SvgPicture.asset(
+              'assets/icons/$icon.svg',
+              width: 30,
+              height: 30,
+              color: Colors.grey[500],
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              '$temp°',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 20.0,
+                //fontWeight: FontWeight.w500,
+              ),
+            ),
+            //SizedBox(height: 8.0),
+            Text(
+              '$condition',
+              style: TextStyle(
+                  color: const Color(0xFF5E5E5F),
+                  fontFamily: 'Nunito',
+                  fontSize: 11.0),
+            ),
+            SizedBox(width: 95),
           ],
         ),
-        VerticalDivider(thickness: 0.5),
+        //VerticalDivider(thickness: 0.5),
       ],
     );
   }
@@ -536,7 +566,7 @@ class Precipitation extends StatelessWidget {
               '${amount}mm',
               style: TextStyle(color: Colors.lightBlue),
             ),
-            Image.asset('images/$icon.png', width: 50, height: 50),
+            Image.asset('assets/$icon.png', width: 50, height: 50),
             SizedBox(height: 4.0),
             Text(
               '$time',
@@ -649,7 +679,7 @@ class DailyForcast extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$date'),
+                Text('$date', style: TextStyle(fontFamily: 'Nunito')),
                 Text(
                   '$condition',
                   style: kGreyTextStyle,
@@ -667,7 +697,12 @@ class DailyForcast extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 8.0),
-                  Image.asset('images/$icon.png', width: 50, height: 50),
+                  SvgPicture.asset(
+                    'assets/icons/$icon.svg',
+                    width: 30,
+                    height: 30,
+                    color: Colors.grey[500],
+                  ),
                   SizedBox(width: 8.0),
                   Column(
                     children: [

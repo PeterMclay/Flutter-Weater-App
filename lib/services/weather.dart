@@ -57,12 +57,14 @@ class WeatherData {
     return feelsLikeTemp.toInt();
   }
 
-  String getCurrentCondition({String type, int index}) {
-    String condition;
+  int getCurrentCondition({String type, int index}) {
+    int condition;
     if (type == 'daily') {
-      condition = weatherData['daily'][index]['weather'][0]['main'];
+      condition = weatherData['daily'][index]['weather'][0]['id'];
+    } else if (type == 'hourly') {
+      condition = weatherData['hourly'][index]['weather'][0]['id'];
     } else {
-      condition = weatherData['current']['weather'][0]['main'];
+      condition = weatherData['current']['weather'][0]['id'];
     }
     return condition;
   }

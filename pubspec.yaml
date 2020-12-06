@@ -20,7 +20,7 @@ dependencies:
   flutter_google_places: ^0.2.6
   geocoder: ^0.2.1
   pull_to_refresh: ^1.6.3
-
+  flutter_svg: ^0.19.1
   
 dev_dependencies:
   flutter_test:
@@ -30,4 +30,11 @@ flutter:
   uses-material-design: true
 
   assets:
-  - images/
+  - assets/
+  - assets/icons/
+  - assets/images/
+
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: fonts/Nunito-Regular.ttf
