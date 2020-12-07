@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 const kTemperatureTextStyle = TextStyle(
-  fontSize: 70.0,
+  fontSize: 50.0,
   //fontWeight: FontWeight.w600,
   color: Colors.white,
   fontFamily: 'Nunito',

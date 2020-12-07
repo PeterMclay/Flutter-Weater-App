@@ -69,47 +69,6 @@ class WeatherData {
     return condition;
   }
 
-  String getCurrentBackground() {
-    String id = weatherData['current']['weather'][0]['icon'];
-    String icon;
-    if (id.contains('01')) {
-      if (id.contains('d')) {
-        icon = 'ClearD';
-      } else {
-        icon = 'ClearN';
-      }
-    } else if (id.contains('03') || id.contains('02')) {
-      if (id.contains('d')) {
-        icon = 'PartlyCloudyD';
-      } else {
-        icon = 'PartlyCloudyD';
-      }
-    } else if (id.contains('04')) {
-      if (id.contains('d')) {
-        icon = 'CloudyD';
-      } else {
-        icon = 'CloudyD';
-      }
-    } else if (id.contains('13')) {
-      if (id.contains('d')) {
-        icon = 'SnowyD';
-      } else {
-        icon = 'SnowyN';
-      }
-    } else if (id.contains('09') || id.contains('10')) {
-      if (id.contains('d')) {
-        icon = 'RainyD';
-      } else {
-        icon = 'RainyN';
-      }
-    } else if (id.contains('11')) {
-      icon = 'thunderstorm';
-    } else {
-      icon = 'RainyD';
-    }
-    return icon;
-  }
-
   int getCurrentPressure() {
     var currentPressure = weatherData['current']['pressure'];
     return currentPressure.toInt();
@@ -167,9 +126,24 @@ class WeatherData {
 
   String getCurrentTime() {
     int timeInMillis = weatherData['current']['dt'];
-    var date = DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000);
+    int timeZoneOffset = weatherData['timezone_offset'];
+    timeInMillis = timeInMillis - timeZoneOffset;
+    var date =
+        DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000, isUtc: true);
     var formattedCurrentTime = DateFormat.jm().format(date);
     return formattedCurrentTime;
+  }
+
+  bool isNightTime() {
+    int currentTime = weatherData['current']['dt'];
+    int timeZoneOffset = weatherData['timezone_offset'];
+    currentTime = currentTime - timeZoneOffset;
+    int sunsetTime = weatherData['current']['sunset'];
+    if (currentTime - sunsetTime > 0) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   List<String> getCurrentSunriseSunrset() {
@@ -204,12 +178,18 @@ class WeatherData {
   String getFutureTime({String type, int index}) {
     if (type == 'hourly') {
       int timeInMillis = weatherData['$type'][index]['dt'];
-      var date = DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000);
+      int timeZoneOffset = weatherData['timezone_offset'];
+      timeInMillis = timeInMillis - timeZoneOffset;
+      var date = DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000,
+          isUtc: true);
       var formattedCurrentTime = DateFormat.jm().format(date);
       return formattedCurrentTime;
     } else {
       int timeInMillis = weatherData['$type'][index]['dt'];
-      var date = DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000);
+      int timeZoneOffset = weatherData['timezone_offset'];
+      timeInMillis = timeInMillis - timeZoneOffset;
+      var date = DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000,
+          isUtc: true);
       var formattedCurrentTime = DateFormat.MMMMEEEEd().format(date);
       return formattedCurrentTime;
     }

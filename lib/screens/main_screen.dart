@@ -33,6 +33,7 @@ class _MainScreenState extends State<MainScreen> {
   String windColor;
   Color backgroundColor;
   String displayDate;
+  bool isNightTime;
 
   String wind = 'Calm';
   String angle = 'North East';
@@ -69,9 +70,21 @@ class _MainScreenState extends State<MainScreen> {
         uvi = weatherData.getCurrentUVI();
         sunriseSunset = weatherData.getCurrentSunriseSunrset();
         condition = weatherData.getCurrentCondition(type: 'current', index: 0);
-        backgroundImage = weatherData.getCurrentBackground();
-        backgroundColor = kBackgroundColor[backgroundImage];
         windData = weatherData.getCurrentWindInfo();
+
+        isNightTime = weatherData.isNightTime();
+        if (isNightTime) {
+          if (kWeatherCondition[condition][1] == 'clear' ||
+              kWeatherCondition[condition][1] == 'partly_cloudy') {
+            backgroundImage = kWeatherCondition[condition][1] + '_n';
+          }
+          backgroundColor = kColorNight;
+          print('Its night time');
+        } else {
+          backgroundColor = kColorDay;
+          print('Its not night time');
+        }
+
         if (windData[0] >= 50) {
           windColor = 'Gale-force';
         } else if (windData[0] < 50 && windData[0] >= 38) {
@@ -91,7 +104,6 @@ class _MainScreenState extends State<MainScreen> {
           String date = weatherData.getFutureTime(type: 'daily', index: i);
           int pop = weatherData.getFuturePop(type: 'daily', index: i);
           List<int> temp = weatherData.getDailyMinDay(index: i);
-          String icon = weatherData.getFutureIcon(type: 'daily', index: i);
           int condition =
               weatherData.getCurrentCondition(type: 'daily', index: i);
           if (i == 0) {
@@ -117,10 +129,16 @@ class _MainScreenState extends State<MainScreen> {
           }
           int condition =
               weatherData.getCurrentCondition(type: 'hourly', index: i);
+          String icon;
+          if (isNightTime) {
+            icon = kWeatherCondition[condition][1] + '_n';
+          } else {
+            icon = kWeatherCondition[condition][1];
+          }
           int temp = weatherData.getFutureTemperature(type: 'hourly', index: i);
           hourlyEntries.add(HourlyForcast(
             time: time,
-            icon: kWeatherCondition[condition][1],
+            icon: icon,
             temp: temp,
             condition: kWeatherCondition[condition][0],
           ));
@@ -240,8 +258,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     return Material(
-      color: kColorDay,
-      //color: backgroundColor,
+      color: backgroundColor,
       child: FutureBuilder(
         future: getLocationData(),
         builder: (context, snapshot) {
@@ -270,11 +287,8 @@ class _MainScreenState extends State<MainScreen> {
                         },
                       ),
                     ],
-                    backgroundColor: kColorDay,
-                    //backgroundColor: backgroundColor,
-                    //title: Text('$address'),
+                    backgroundColor: backgroundColor,
                     automaticallyImplyLeading: false,
-                    //centerTitle: true,
                     snap: false,
                     floating: false,
                     pinned: true,
@@ -300,14 +314,14 @@ class _MainScreenState extends State<MainScreen> {
                             Text(
                                 '${kWeatherCondition[condition][0]}, Feels Like $feelsLikeTemp°',
                                 style: kFeelsLikeTextStyle),
-                            SizedBox(height: 16.0),
+                            SizedBox(height: 8.0),
                             Text('$currentTemp°', style: kTemperatureTextStyle),
-                            SizedBox(height: 16.0),
+                            SizedBox(height: 8.0),
                             SvgPicture.asset(
-                              'assets/images/${kWeatherCondition[condition][1]}.svg',
-                              width: 200,
+                              'assets/images/$backgroundImage.svg',
+                              width: 150,
                             ),
-                            SizedBox(height: 64),
+                            SizedBox(height: 36),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: <Widget>[
@@ -370,7 +384,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16),
+                            SizedBox(height: 8.0),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: <Widget>[
@@ -407,7 +421,7 @@ class _MainScreenState extends State<MainScreen> {
                                       style: kWhiteTextStyle,
                                     ),
                                     Text(
-                                      '${sunriseSunset[0]}',
+                                      '${sunriseSunset[1]}',
                                       style: kFeelsLikeTextStyle,
                                     ),
                                   ],
@@ -440,7 +454,7 @@ class _MainScreenState extends State<MainScreen> {
                               decoration: BoxDecoration(
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(2.0)),
-                                color: kColorDay,
+                                color: backgroundColor,
                               ),
                               height: 2.0,
                               width: 40.0,
@@ -461,7 +475,7 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 16.0),
+                          SizedBox(height: 8.0),
                           Divider(
                             thickness: 1.0,
                           ),
