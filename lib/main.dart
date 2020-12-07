@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'screens/main_screen.dart';
-import 'screens/demo_screen.dart';
 
 void main() {
   //runApp(RoutesWidget());
@@ -18,7 +17,6 @@ class Weather extends StatelessWidget {
       initialRoute: MainScreen.id,
       routes: {
         MainScreen.id: (context) => MainScreen(),
-        DemoScreen.id: (context) => DemoScreen(),
       },
     );
   }
