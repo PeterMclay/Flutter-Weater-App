@@ -127,7 +127,7 @@ class WeatherData {
   String getCurrentTime() {
     int timeInMillis = weatherData['current']['dt'];
     int timeZoneOffset = weatherData['timezone_offset'];
-    timeInMillis = timeInMillis - timeZoneOffset;
+    timeInMillis = timeInMillis + timeZoneOffset;
     var date =
         DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000, isUtc: true);
     var formattedCurrentTime = DateFormat.jm().format(date);
@@ -135,11 +135,29 @@ class WeatherData {
   }
 
   bool isNightTime() {
-    int currentTime = weatherData['current']['dt'];
     int timeZoneOffset = weatherData['timezone_offset'];
-    currentTime = currentTime - timeZoneOffset;
-    int sunsetTime = weatherData['current']['sunset'];
-    if (currentTime - sunsetTime > 0) {
+    int currentTime = weatherData['current']['dt'] + timeZoneOffset;
+    int sunsetTime = weatherData['current']['sunset'] + timeZoneOffset;
+    int sunRiseTime = weatherData['current']['sunrise'] + timeZoneOffset;
+    print('Current Time:$currentTime Sunset Time:$sunsetTime');
+    if (currentTime > sunsetTime) {
+      return true;
+    } else if (currentTime < sunRiseTime && currentTime < sunsetTime) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool nightOrDayIcon(int index) {
+    int timeZoneOffset = weatherData['timezone_offset'];
+    int currentTime = weatherData['hourly'][index]['dt'] + timeZoneOffset;
+    int sunSet = weatherData['current']['sunset'] + timeZoneOffset;
+    int sunRise =
+        weatherData['current']['sunrise'] + timeZoneOffset + (24 * 60 * 60);
+    if (currentTime > sunSet) {
+      return true;
+    } else if (currentTime > sunSet && currentTime < sunRise) {
       return true;
     } else {
       return false;
@@ -148,11 +166,16 @@ class WeatherData {
 
   List<String> getCurrentSunriseSunrset() {
     int timeInMillis = weatherData['current']['sunrise'];
-    var date = DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000);
+    int timeZoneOffset = weatherData['timezone_offset'];
+    timeInMillis = timeInMillis + timeZoneOffset;
+    var date =
+        DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000, isUtc: true);
     var formattedCurrentSunriseTime = DateFormat.jm().format(date);
 
     timeInMillis = weatherData['current']['sunset'];
-    date = DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000);
+    timeInMillis = timeInMillis + timeZoneOffset;
+    date =
+        DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000, isUtc: true);
     var formattedCurrentSunsetTime = DateFormat.jm().format(date);
 
     List<String> sunsetSunriseTimes = [
@@ -179,7 +202,7 @@ class WeatherData {
     if (type == 'hourly') {
       int timeInMillis = weatherData['$type'][index]['dt'];
       int timeZoneOffset = weatherData['timezone_offset'];
-      timeInMillis = timeInMillis - timeZoneOffset;
+      timeInMillis = timeInMillis + timeZoneOffset;
       var date = DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000,
           isUtc: true);
       var formattedCurrentTime = DateFormat.jm().format(date);
@@ -187,7 +210,7 @@ class WeatherData {
     } else {
       int timeInMillis = weatherData['$type'][index]['dt'];
       int timeZoneOffset = weatherData['timezone_offset'];
-      timeInMillis = timeInMillis - timeZoneOffset;
+      timeInMillis = timeInMillis + timeZoneOffset;
       var date = DateTime.fromMillisecondsSinceEpoch((timeInMillis) * 1000,
           isUtc: true);
       var formattedCurrentTime = DateFormat.MMMMEEEEd().format(date);

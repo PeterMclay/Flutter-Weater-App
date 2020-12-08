@@ -48,6 +48,7 @@ class _MainScreenState extends State<MainScreen> {
     citySearch = false;
     lat = 0;
     lng = 0;
+    backgroundColor = kColorDay;
     super.initState();
   }
 
@@ -77,12 +78,13 @@ class _MainScreenState extends State<MainScreen> {
           if (kWeatherCondition[condition][1] == 'clear' ||
               kWeatherCondition[condition][1] == 'partly_cloudy') {
             backgroundImage = kWeatherCondition[condition][1] + '_n';
+          } else {
+            backgroundImage = kWeatherCondition[condition][1];
           }
           backgroundColor = kColorNight;
-          print('Its night time');
         } else {
           backgroundColor = kColorDay;
-          print('Its not night time');
+          backgroundImage = kWeatherCondition[condition][1];
         }
 
         if (windData[0] >= 50) {
@@ -120,17 +122,13 @@ class _MainScreenState extends State<MainScreen> {
         }
 
         //Hourly Temp Builder
-        for (int i = 0; i <= 15; i++) {
+        for (int i = 1; i <= 15; i++) {
           String time = weatherData.getFutureTime(type: 'hourly', index: i);
-          if (i == 0) {
-            time = 'Now';
-          } else {
-            time = time.toLowerCase();
-          }
+          time = time.toLowerCase();
           int condition =
               weatherData.getCurrentCondition(type: 'hourly', index: i);
           String icon;
-          if (isNightTime) {
+          if (weatherData.nightOrDayIcon(i)) {
             icon = kWeatherCondition[condition][1] + '_n';
           } else {
             icon = kWeatherCondition[condition][1];
@@ -150,14 +148,14 @@ class _MainScreenState extends State<MainScreen> {
           int percent = weatherData.getFuturePop(type: 'hourly', index: i);
           double amount = weatherData.getRainAmount(type: 'hourly', index: i);
           String icon;
-          if (percent > 75) {
-            icon = '100';
-          } else if (percent <= 75 && percent > 50) {
+          if (percent >= 75) {
             icon = '75';
-          } else if (percent <= 50 && percent < 25) {
+          } else if (percent < 75 && percent >= 50) {
             icon = '50';
-          } else {
+          } else if (percent < 50 && percent >= 25) {
             icon = '25';
+          } else {
+            icon = '0';
           }
           precipitationEntries.add(Precipitation(
               time: time.toLowerCase(),
@@ -230,7 +228,7 @@ class _MainScreenState extends State<MainScreen> {
   void _gpsButton() async {
     refreshUI = true;
     citySearch = false;
-    await getLocationData();
+    getLocationData();
     setState(() {
       gpsOn = Icons.gps_fixed;
     });
@@ -266,7 +264,10 @@ class _MainScreenState extends State<MainScreen> {
             return SmartRefresher(
               enablePullUp: false,
               enablePullDown: true,
-              header: MaterialClassicHeader(),
+              header: MaterialClassicHeader(
+                color: Color(0xFFF8F16C),
+                backgroundColor: backgroundColor,
+              ),
               controller: _refreshController,
               onRefresh: _onRefresh,
               child: CustomScrollView(
@@ -292,16 +293,17 @@ class _MainScreenState extends State<MainScreen> {
                     snap: false,
                     floating: false,
                     pinned: true,
-                    stretch: true,
-                    expandedHeight: height * 0.72,
+                    stretch: false,
+                    primary: true,
+                    expandedHeight: height * 0.75,
                     elevation: 0,
                     shadowColor: null,
                     flexibleSpace: FlexibleSpaceBar(
                       collapseMode: CollapseMode.parallax,
                       background: Container(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            SizedBox(height: height * 0.1),
                             Text(
                               '$address',
                               style: TextStyle(
@@ -316,12 +318,12 @@ class _MainScreenState extends State<MainScreen> {
                                 style: kFeelsLikeTextStyle),
                             SizedBox(height: 8.0),
                             Text('$currentTemp°', style: kTemperatureTextStyle),
-                            SizedBox(height: 8.0),
+                            SizedBox(height: 40.0),
                             SvgPicture.asset(
                               'assets/images/$backgroundImage.svg',
-                              width: 150,
+                              height: height * 0.10,
                             ),
-                            SizedBox(height: 36),
+                            SizedBox(height: 40),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: <Widget>[
@@ -454,7 +456,7 @@ class _MainScreenState extends State<MainScreen> {
                               decoration: BoxDecoration(
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(2.0)),
-                                color: backgroundColor,
+                                color: Colors.grey[600],
                               ),
                               height: 2.0,
                               width: 40.0,
@@ -465,7 +467,7 @@ class _MainScreenState extends State<MainScreen> {
                           SizedBox(height: 16.0),
                           Container(
                             child: SizedBox(
-                              height: 140.0,
+                              height: 120.0,
                               child: ListView.builder(
                                 itemCount: hourlyEntries.length,
                                 scrollDirection: Axis.horizontal,
@@ -475,7 +477,6 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 8.0),
                           Divider(
                             thickness: 1.0,
                           ),
@@ -487,7 +488,7 @@ class _MainScreenState extends State<MainScreen> {
                           SizedBox(height: 16.0),
                           Container(
                             child: SizedBox(
-                              height: 110.0,
+                              height: 120.0,
                               child: ListView.builder(
                                 itemCount: precipitationEntries.length,
                                 scrollDirection: Axis.horizontal,
@@ -497,7 +498,6 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 16.0),
                           Divider(
                             thickness: 1.0,
                           ),
@@ -511,8 +511,9 @@ class _MainScreenState extends State<MainScreen> {
                               Text(
                                 '${windData[0]}',
                                 style: TextStyle(
-                                  fontSize: 40.0,
+                                  fontSize: 30.0,
                                   color: windStrength[windColor],
+                                  fontFamily: 'Nunito',
                                 ),
                               ),
                               SizedBox(width: 4.0),
@@ -520,16 +521,19 @@ class _MainScreenState extends State<MainScreen> {
                                 children: <Widget>[
                                   Transform.rotate(
                                     angle: -windAngle[windData[1]],
-                                    child: Icon(
-                                      Icons.navigation,
+                                    child: SvgPicture.asset(
+                                      'assets/wind.svg',
                                       color: windStrength[windColor],
-                                      size: 18.0,
+                                      width: 20,
+                                      height: 20,
                                     ),
                                   ),
-                                  Text(
-                                    'km/h',
-                                    style: kGreyTextStyle,
-                                  ),
+                                  Text('km/h',
+                                      style: TextStyle(
+                                        color: windStrength[windColor],
+                                        fontFamily: 'Nunito',
+                                        fontSize: 11.0,
+                                      )),
                                 ],
                               ),
                               SizedBox(width: 24.0),
@@ -538,6 +542,7 @@ class _MainScreenState extends State<MainScreen> {
                                 children: <Widget>[
                                   Text(
                                     windColor,
+                                    style: kBlackTextStyle,
                                   ),
                                   Text(
                                     'From ${windData[1]}',
@@ -550,7 +555,7 @@ class _MainScreenState extends State<MainScreen> {
                           SizedBox(height: 16.0),
                           Container(
                             child: SizedBox(
-                              height: 75.0,
+                              height: 100.0,
                               child: ListView.builder(
                                 itemCount: windEntries.length,
                                 scrollDirection: Axis.horizontal,
@@ -560,7 +565,6 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 16.0),
                           Divider(
                             thickness: 1.0,
                           ),
@@ -598,8 +602,9 @@ class _MainScreenState extends State<MainScreen> {
           else {
             return Center(
               child: Container(
+                color: backgroundColor,
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.amberAccent),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF8F16C)),
                 ),
               ),
             );
@@ -629,18 +634,14 @@ class HourlyForcast extends StatelessWidget {
             SizedBox(height: 16.0),
             SvgPicture.asset(
               'assets/icons/$icon.svg',
-              width: 30,
-              height: 30,
+              width: 20,
+              height: 20,
               color: Colors.grey[500],
             ),
             SizedBox(height: 16.0),
             Text(
               '$temp°',
-              style: TextStyle(
-                fontFamily: 'Nunito',
-                fontSize: 20.0,
-                //fontWeight: FontWeight.w500,
-              ),
+              style: kTitleTextStyle,
             ),
             //SizedBox(height: 8.0),
             Text(
@@ -672,61 +673,24 @@ class Precipitation extends StatelessWidget {
         Column(
           children: <Widget>[
             Text(
+              '$time',
+              style: kBlackTextStyle,
+            ),
+            SizedBox(height: 16.0),
+            SvgPicture.asset('assets/$icon.svg', width: 20, height: 20),
+            SizedBox(height: 16.0),
+            Text(
               '$percent%',
+              style: kTitleTextStyle,
             ),
             Text(
               '${amount}mm',
-              style: TextStyle(color: Colors.lightBlue),
+              style: TextStyle(
+                  color: Color(0xFF2CA4CC),
+                  fontFamily: 'Nunito',
+                  fontSize: 11.0),
             ),
-            Image.asset('assets/$icon.png', width: 50, height: 50),
-            SizedBox(height: 4.0),
-            Text(
-              '$time',
-              style: kGreyTextStyle,
-            ),
-            SizedBox(width: 65),
-          ],
-        ),
-        VerticalDivider(thickness: 0.5),
-      ],
-    );
-  }
-}
-
-class CurrentDetails extends StatelessWidget {
-  int humidity, pressure, visibility, uvIndex;
-  String sunrise, sunset;
-  CurrentDetails(
-      {this.humidity,
-      this.pressure,
-      this.visibility,
-      this.uvIndex,
-      this.sunrise,
-      this.sunset});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text('Humidity', style: kGreyTextStyle),
-            Text('Pressure', style: kGreyTextStyle),
-            Text('Visibility', style: kGreyTextStyle),
-            Text('UV Index', style: kGreyTextStyle),
-            Text('Sunrise/sunset', style: kGreyTextStyle),
-          ],
-        ),
-        SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text('$humidity'),
-            Text('$pressure'),
-            Text('$visibility'),
-            Text('$uvIndex'),
-            Text('${sunrise.toLowerCase()} / ${sunset.toLowerCase()}'),
+            SizedBox(width: 95),
           ],
         ),
       ],
@@ -744,25 +708,25 @@ class Wind extends StatelessWidget {
       children: [
         Column(
           children: <Widget>[
-            Text('$speed km/h'),
-            SizedBox(height: 8.0),
-            Transform.rotate(
-              angle: -windAngle[direction],
-              child: Icon(
-                Icons.navigation,
-                color: windStrength[windColor],
-                size: 24.0,
-              ),
-            ),
-            SizedBox(height: 8.0),
             Text(
               '$time',
-              style: kGreyTextStyle,
+              style: kBlackTextStyle,
             ),
-            SizedBox(width: 65),
+            SizedBox(height: 16.0),
+            Transform.rotate(
+              angle: -windAngle[direction],
+              child: SvgPicture.asset(
+                'assets/wind.svg',
+                color: windStrength[windColor],
+                width: 20,
+                height: 20,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Text('$speed km/h', style: kTitleTextStyle),
+            SizedBox(width: 95),
           ],
         ),
-        VerticalDivider(thickness: 0.5),
       ],
     );
   }
@@ -791,7 +755,8 @@ class DailyForcast extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$date', style: TextStyle(fontFamily: 'Nunito')),
+                Text('$date', style: kBlackTextStyle),
+                SizedBox(height: 4.0),
                 Text(
                   '$condition',
                   style: kGreyTextStyle,
@@ -805,7 +770,9 @@ class DailyForcast extends StatelessWidget {
                   Text(
                     _pop(pop),
                     style: TextStyle(
-                      color: Colors.lightBlue,
+                      color: Color(0xFF2CA4CC),
+                      fontFamily: 'Nunito',
+                      fontSize: 11.0,
                     ),
                   ),
                   SizedBox(width: 8.0),
@@ -818,7 +785,11 @@ class DailyForcast extends StatelessWidget {
                   SizedBox(width: 8.0),
                   Column(
                     children: [
-                      Text('$tempH°'),
+                      Text(
+                        '$tempH°',
+                        style: kTitleTextStyle,
+                      ),
+                      SizedBox(height: 4.0),
                       Text(
                         '$tempL°',
                         style: kGreyTextStyle,
@@ -830,10 +801,13 @@ class DailyForcast extends StatelessWidget {
             ),
           ],
         ),
-        Divider(
-          thickness: 0.5,
-          indent: 5.0,
-          endIndent: 5.0,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Divider(
+            thickness: 0.5,
+            indent: 5.0,
+            endIndent: 5.0,
+          ),
         ),
       ],
     );
