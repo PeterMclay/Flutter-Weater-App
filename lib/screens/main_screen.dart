@@ -46,7 +46,6 @@ class _MainScreenState extends State<MainScreen> {
   final List<Wind> windEntries = <Wind>[];
   final List<DailyForcast> dailyForcastEntries = <DailyForcast>[];
 
-  String connectivity = '';
   @override
   void initState() {
     refreshUI = true;
@@ -58,15 +57,15 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future getLocationData() async {
+    print('Get Location Data Called');
     if (refreshUI) {
-      print(
-          'refreshing ui with values, lat: $lat, lng: $lng, citySearch: $citySearch');
       WeatherData weatherData =
           WeatherData(citySearch: citySearch, latitude: lat, longitude: lng);
       var x = await weatherData.getLocationData();
-      if (x == 'error') {
-        print('error');
-        return null;
+      if (x == null) {
+        refreshUI = true;
+        //setState(() {});
+        return x;
       }
       setState(() {
         address = weatherData.getAddress();
@@ -221,7 +220,10 @@ class _MainScreenState extends State<MainScreen> {
 
   void _onRefresh() async {
     refreshUI = true;
-    await getLocationData();
+    var x = await getLocationData();
+    if (x == null) {
+      setState(() {});
+    }
     //await Future.delayed(Duration(milliseconds: 1000));
     print('onRefresh Called');
     _refreshController.refreshCompleted();
@@ -235,371 +237,387 @@ class _MainScreenState extends State<MainScreen> {
       child: FutureBuilder(
         future: getLocationData(),
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return SmartRefresher(
-              enablePullUp: false,
-              enablePullDown: true,
-              header: MaterialClassicHeader(
-                color: Color(0xFFF8F16C),
-                backgroundColor: backgroundColor,
-              ),
-              controller: _refreshController,
-              onRefresh: _onRefresh,
-              child: CustomScrollView(
-                slivers: <Widget>[
-                  SliverAppBar(
-                    key: homeScaffoldKey,
-                    actions: <Widget>[
-                      IconButton(
-                        icon: Icon(gpsOn),
-                        onPressed: () {
-                          _gpsButton();
-                        },
+          return snapshot.connectionState == ConnectionState.done
+              ? snapshot.hasData
+                  ? SmartRefresher(
+                      enablePullUp: false,
+                      enablePullDown: true,
+                      header: MaterialClassicHeader(
+                        color: Color(0xFFF8F16C),
+                        backgroundColor: backgroundColor,
                       ),
-                      IconButton(
-                        icon: Icon(Icons.search),
-                        onPressed: () async {
-                          var recieved = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CustomSearchScaffold(),
-                            ),
-                          );
+                      controller: _refreshController,
+                      onRefresh: _onRefresh,
+                      child: CustomScrollView(
+                        slivers: <Widget>[
+                          SliverAppBar(
+                            key: homeScaffoldKey,
+                            actions: <Widget>[
+                              IconButton(
+                                icon: Icon(gpsOn),
+                                onPressed: () {
+                                  _gpsButton();
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.search),
+                                onPressed: () async {
+                                  var recieved = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => CustomSearchScaffold(),
+                                    ),
+                                  );
 
-                          if (recieved != null) {
-                            citySearch = true;
-                            refreshUI = true;
-                            lat = recieved[0];
-                            lng = recieved[1];
-                            print('data recieved');
-                            print(
-                                'new lat and long = ${recieved[0]} ${recieved[1]}');
-                            await getLocationData();
-                          }
-                        },
-                      ),
-                    ],
-                    backgroundColor: backgroundColor,
-                    automaticallyImplyLeading: false,
-                    snap: false,
-                    floating: false,
-                    pinned: true,
-                    stretch: false,
-                    primary: true,
-                    expandedHeight: height * 0.75,
-                    elevation: 0,
-                    shadowColor: null,
-                    flexibleSpace: FlexibleSpaceBar(
-                      collapseMode: CollapseMode.parallax,
-                      background: Container(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Text(
-                              '$address',
-                              style: TextStyle(
-                                  fontFamily: 'Nunito',
-                                  fontSize: 24,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                                '${kWeatherCondition[condition][0]}, Feels Like $feelsLikeTemp°',
-                                style: kFeelsLikeTextStyle),
-                            SizedBox(height: 8.0),
-                            Text('$currentTemp°', style: kTemperatureTextStyle),
-                            SizedBox(height: 40.0),
-                            SvgPicture.asset(
-                              'assets/images/$backgroundImage.svg',
-                              height: height * 0.10,
-                            ),
-                            SizedBox(height: 40),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: <Widget>[
-                                Column(
-                                  children: [
-                                    SvgPicture.asset(
-                                      'assets/icons/humidity.svg',
-                                      width: 20,
-                                      height: 20,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(height: 8.0),
-                                    Text(
-                                      'Humidity',
-                                      style: kWhiteTextStyle,
-                                    ),
-                                    Text(
-                                      '$humidity%',
-                                      style: kFeelsLikeTextStyle,
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    SvgPicture.asset(
-                                      'assets/icons/pressure.svg',
-                                      width: 20,
-                                      height: 20,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(height: 8.0),
-                                    Text(
-                                      'Pressure',
-                                      style: kWhiteTextStyle,
-                                    ),
-                                    Text(
-                                      '${pressure}mBar',
-                                      style: kFeelsLikeTextStyle,
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    SvgPicture.asset(
-                                      'assets/icons/wind.svg',
-                                      width: 20,
-                                      height: 20,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(height: 8.0),
-                                    Text(
-                                      'Wind',
-                                      style: kWhiteTextStyle,
-                                    ),
-                                    Text(
-                                      '${windData[0]}km/h',
-                                      style: kFeelsLikeTextStyle,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 8.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                                Column(
-                                  children: [
-                                    SvgPicture.asset(
-                                      'assets/icons/sunrise.svg',
-                                      width: 20,
-                                      height: 20,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(height: 8.0),
-                                    Text(
-                                      'Sunrise',
-                                      style: kWhiteTextStyle,
-                                    ),
-                                    Text(
-                                      '${sunriseSunset[0]}',
-                                      style: kFeelsLikeTextStyle,
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    SvgPicture.asset(
-                                      'assets/icons/sunset.svg',
-                                      width: 20,
-                                      height: 20,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(height: 8.0),
-                                    Text(
-                                      'Sunset',
-                                      style: kWhiteTextStyle,
-                                    ),
-                                    Text(
-                                      '${sunriseSunset[1]}',
-                                      style: kFeelsLikeTextStyle,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Container(
-                      padding: EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30.0),
-                          topRight: Radius.circular(30.0),
-                        ),
-                        //color: Color(0xFFE6E6E5),
-                        color: Colors.white,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Center(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(2.0)),
-                                color: Colors.grey[600],
-                              ),
-                              height: 2.0,
-                              width: 40.0,
-                            ),
-                          ),
-                          SizedBox(height: 16.0),
-                          Text('$displayDate', style: kTitleTextStyle),
-                          SizedBox(height: 16.0),
-                          Container(
-                            child: SizedBox(
-                              height: 120.0,
-                              child: ListView.builder(
-                                itemCount: hourlyEntries.length,
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return hourlyEntries[index];
+                                  if (recieved != null) {
+                                    citySearch = true;
+                                    refreshUI = true;
+                                    lat = recieved[0];
+                                    lng = recieved[1];
+                                    print('data recieved');
+                                    print(
+                                        'new lat and long = ${recieved[0]} ${recieved[1]}');
+                                    await getLocationData();
+                                  }
                                 },
-                              ),
-                            ),
-                          ),
-                          Divider(
-                            thickness: 1.0,
-                          ),
-                          SizedBox(height: 16.0),
-                          Container(
-                            child:
-                                Text('Precipitation', style: kTitleTextStyle),
-                          ),
-                          SizedBox(height: 16.0),
-                          Container(
-                            child: SizedBox(
-                              height: 120.0,
-                              child: ListView.builder(
-                                itemCount: precipitationEntries.length,
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return precipitationEntries[index];
-                                },
-                              ),
-                            ),
-                          ),
-                          Divider(
-                            thickness: 1.0,
-                          ),
-                          SizedBox(height: 16.0),
-                          Container(
-                            child: Text('Wind', style: kTitleTextStyle),
-                          ),
-                          SizedBox(height: 16.0),
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                '${windData[0]}',
-                                style: TextStyle(
-                                  fontSize: 30.0,
-                                  color: windStrength[windColor],
-                                  fontFamily: 'Nunito',
-                                ),
-                              ),
-                              SizedBox(width: 4.0),
-                              Column(
-                                children: <Widget>[
-                                  Transform.rotate(
-                                    angle: -windAngle[windData[1]],
-                                    child: SvgPicture.asset(
-                                      'assets/wind.svg',
-                                      color: windStrength[windColor],
-                                      width: 20,
-                                      height: 20,
-                                    ),
-                                  ),
-                                  Text('km/h',
-                                      style: TextStyle(
-                                        color: windStrength[windColor],
-                                        fontFamily: 'Nunito',
-                                        fontSize: 11.0,
-                                      )),
-                                ],
-                              ),
-                              SizedBox(width: 24.0),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    windColor,
-                                    style: kBlackTextStyle,
-                                  ),
-                                  Text(
-                                    'From ${windData[1]}',
-                                    style: kGreyTextStyle,
-                                  ),
-                                ],
                               ),
                             ],
-                          ),
-                          SizedBox(height: 16.0),
-                          Container(
-                            child: SizedBox(
-                              height: 100.0,
-                              child: ListView.builder(
-                                itemCount: windEntries.length,
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return windEntries[index];
-                                },
+                            backgroundColor: backgroundColor,
+                            automaticallyImplyLeading: false,
+                            snap: false,
+                            floating: false,
+                            pinned: true,
+                            stretch: false,
+                            primary: true,
+                            expandedHeight: height * 0.75,
+                            elevation: 0,
+                            shadowColor: null,
+                            flexibleSpace: FlexibleSpaceBar(
+                              collapseMode: CollapseMode.parallax,
+                              background: Container(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text(
+                                      '$address',
+                                      style: TextStyle(
+                                          fontFamily: 'Nunito',
+                                          fontSize: 24,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                        '${kWeatherCondition[condition][0]}, Feels Like $feelsLikeTemp°',
+                                        style: kFeelsLikeTextStyle),
+                                    SizedBox(height: 8.0),
+                                    Text('$currentTemp°',
+                                        style: kTemperatureTextStyle),
+                                    SizedBox(height: 40.0),
+                                    SvgPicture.asset(
+                                      'assets/images/$backgroundImage.svg',
+                                      height: height * 0.10,
+                                    ),
+                                    SizedBox(height: 40),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: <Widget>[
+                                        Column(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/icons/humidity.svg',
+                                              width: 20,
+                                              height: 20,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(height: 8.0),
+                                            Text(
+                                              'Humidity',
+                                              style: kWhiteTextStyle,
+                                            ),
+                                            Text(
+                                              '$humidity%',
+                                              style: kFeelsLikeTextStyle,
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/icons/pressure.svg',
+                                              width: 20,
+                                              height: 20,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(height: 8.0),
+                                            Text(
+                                              'Pressure',
+                                              style: kWhiteTextStyle,
+                                            ),
+                                            Text(
+                                              '${pressure}mBar',
+                                              style: kFeelsLikeTextStyle,
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/icons/wind.svg',
+                                              width: 20,
+                                              height: 20,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(height: 8.0),
+                                            Text(
+                                              'Wind',
+                                              style: kWhiteTextStyle,
+                                            ),
+                                            Text(
+                                              '${windData[0]}km/h',
+                                              style: kFeelsLikeTextStyle,
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 8.0),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: <Widget>[
+                                        Column(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/icons/sunrise.svg',
+                                              width: 20,
+                                              height: 20,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(height: 8.0),
+                                            Text(
+                                              'Sunrise',
+                                              style: kWhiteTextStyle,
+                                            ),
+                                            Text(
+                                              '${sunriseSunset[0]}',
+                                              style: kFeelsLikeTextStyle,
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/icons/sunset.svg',
+                                              width: 20,
+                                              height: 20,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(height: 8.0),
+                                            Text(
+                                              'Sunset',
+                                              style: kWhiteTextStyle,
+                                            ),
+                                            Text(
+                                              '${sunriseSunset[1]}',
+                                              style: kFeelsLikeTextStyle,
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                          Divider(
-                            thickness: 1.0,
-                          ),
-                          SizedBox(height: 16.0),
-                          Container(
-                            child:
-                                Text('Daily Forcast', style: kTitleTextStyle),
-                          ),
-                          SizedBox(height: 16.0),
-                          Container(
-                            child: SizedBox(
-                              height: 300.0,
-                              child: ListView.builder(
-                                padding: EdgeInsets.all(0),
-                                itemCount: dailyForcastEntries.length,
-                                scrollDirection: Axis.vertical,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return dailyForcastEntries[index];
-                                },
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Container(
+                              padding: EdgeInsets.all(16.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(30.0),
+                                  topRight: Radius.circular(30.0),
+                                ),
+                                //color: Color(0xFFE6E6E5),
+                                color: Colors.white,
                               ),
-                            ),
-                          ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Center(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(2.0)),
+                                        color: Colors.grey[600],
+                                      ),
+                                      height: 2.0,
+                                      width: 40.0,
+                                    ),
+                                  ),
+                                  SizedBox(height: 16.0),
+                                  Text('$displayDate', style: kTitleTextStyle),
+                                  SizedBox(height: 16.0),
+                                  Container(
+                                    child: SizedBox(
+                                      height: 120.0,
+                                      child: ListView.builder(
+                                        itemCount: hourlyEntries.length,
+                                        scrollDirection: Axis.horizontal,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return hourlyEntries[index];
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  Divider(
+                                    thickness: 1.0,
+                                  ),
+                                  SizedBox(height: 16.0),
+                                  Container(
+                                    child: Text('Precipitation',
+                                        style: kTitleTextStyle),
+                                  ),
+                                  SizedBox(height: 16.0),
+                                  Container(
+                                    child: SizedBox(
+                                      height: 120.0,
+                                      child: ListView.builder(
+                                        itemCount: precipitationEntries.length,
+                                        scrollDirection: Axis.horizontal,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return precipitationEntries[index];
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  Divider(
+                                    thickness: 1.0,
+                                  ),
+                                  SizedBox(height: 16.0),
+                                  Container(
+                                    child: Text('Wind', style: kTitleTextStyle),
+                                  ),
+                                  SizedBox(height: 16.0),
+                                  Row(
+                                    children: <Widget>[
+                                      Text(
+                                        '${windData[0]}',
+                                        style: TextStyle(
+                                          fontSize: 30.0,
+                                          color: windStrength[windColor],
+                                          fontFamily: 'Nunito',
+                                        ),
+                                      ),
+                                      SizedBox(width: 4.0),
+                                      Column(
+                                        children: <Widget>[
+                                          Transform.rotate(
+                                            angle: -windAngle[windData[1]],
+                                            child: SvgPicture.asset(
+                                              'assets/wind.svg',
+                                              color: windStrength[windColor],
+                                              width: 20,
+                                              height: 20,
+                                            ),
+                                          ),
+                                          Text('km/h',
+                                              style: TextStyle(
+                                                color: windStrength[windColor],
+                                                fontFamily: 'Nunito',
+                                                fontSize: 11.0,
+                                              )),
+                                        ],
+                                      ),
+                                      SizedBox(width: 24.0),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            windColor,
+                                            style: kBlackTextStyle,
+                                          ),
+                                          Text(
+                                            'From ${windData[1]}',
+                                            style: kGreyTextStyle,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 16.0),
+                                  Container(
+                                    child: SizedBox(
+                                      height: 100.0,
+                                      child: ListView.builder(
+                                        itemCount: windEntries.length,
+                                        scrollDirection: Axis.horizontal,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return windEntries[index];
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  Divider(
+                                    thickness: 1.0,
+                                  ),
+                                  SizedBox(height: 16.0),
+                                  Container(
+                                    child: Text('Daily Forcast',
+                                        style: kTitleTextStyle),
+                                  ),
+                                  SizedBox(height: 16.0),
+                                  Container(
+                                    child: SizedBox(
+                                      height: 300.0,
+                                      child: ListView.builder(
+                                        padding: EdgeInsets.all(0),
+                                        itemCount: dailyForcastEntries.length,
+                                        scrollDirection: Axis.vertical,
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return dailyForcastEntries[index];
+                                        },
+                                      ),
+                                    ),
+                                  ),
 
-                          //SizedBox(height: 150.0),
+                                  //SizedBox(height: 150.0),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
+                    )
+                  : Center(
+                      child: Container(
+                        color: backgroundColor,
+                        child: RaisedButton(
+                          child: Text('No network, press to refresh'),
+                          onPressed: () {
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                    )
+              : Center(
+                  child: Container(
+                    color: backgroundColor,
+                    child: CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFFF8F16C)),
                     ),
                   ),
-                ],
-              ),
-            );
-          }
-
-          //Else Does Not have Data
-          else {
-            return Center(
-              child: Container(
-                color: backgroundColor,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF8F16C)),
-                ),
-              ),
-            );
-          }
+                );
         },
       ),
     );
