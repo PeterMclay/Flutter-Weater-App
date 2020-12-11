@@ -6,8 +6,13 @@ import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:weatherapp/services/keys.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:math';
+import 'package:connectivity/connectivity.dart';
+import 'package:weatherapp/main.dart';
 
 GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
+IconData gpsOn = Icons.gps_fixed;
+Color backgroundColor;
 
 class MainScreen extends StatefulWidget {
   static const String id = 'main_screen';
@@ -16,11 +21,12 @@ class MainScreen extends StatefulWidget {
 }
 
 final homeScaffoldKey = GlobalKey<ScaffoldState>();
+final searchScaffoldKey = GlobalKey<ScaffoldState>();
 
 class _MainScreenState extends State<MainScreen> {
   bool refreshUI;
   bool citySearch = false;
-  IconData gpsOn = Icons.gps_fixed;
+  //IconData gpsOn = Icons.gps_fixed;
   String address;
   double lat, lng;
   int currentTemp;
@@ -31,10 +37,8 @@ class _MainScreenState extends State<MainScreen> {
   String backgroundImage;
   List windData;
   String windColor;
-  Color backgroundColor;
   String displayDate;
   bool isNightTime;
-
   String wind = 'Calm';
   String angle = 'North East';
   final List<Precipitation> precipitationEntries = <Precipitation>[];
@@ -42,6 +46,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Wind> windEntries = <Wind>[];
   final List<DailyForcast> dailyForcastEntries = <DailyForcast>[];
 
+  String connectivity = '';
   @override
   void initState() {
     refreshUI = true;
@@ -54,9 +59,15 @@ class _MainScreenState extends State<MainScreen> {
 
   Future getLocationData() async {
     if (refreshUI) {
+      print(
+          'refreshing ui with values, lat: $lat, lng: $lng, citySearch: $citySearch');
       WeatherData weatherData =
           WeatherData(citySearch: citySearch, latitude: lat, longitude: lng);
-      await weatherData.getLocationData();
+      var x = await weatherData.getLocationData();
+      if (x == 'error') {
+        print('error');
+        return null;
+      }
       setState(() {
         address = weatherData.getAddress();
         precipitationEntries.clear();
@@ -196,35 +207,6 @@ class _MainScreenState extends State<MainScreen> {
     return 1;
   }
 
-  Future<void> _handlePressButton() async {
-    // show input autocomplete with selected mode
-    // then get the Prediction selected
-    Prediction p = await PlacesAutocomplete.show(
-      context: context,
-      apiKey: kGoogleApiKey,
-      //onError: onError,
-      mode: Mode.fullscreen,
-      logo: Row(),
-      language: "en",
-      components: [
-        Component(Component.country, "ca"),
-        Component(Component.country, "us")
-      ],
-    );
-    if (p != null) {
-      PlacesDetailsResponse detail =
-          await _places.getDetailsByPlaceId(p.placeId);
-      lat = detail.result.geometry.location.lat;
-      lng = detail.result.geometry.location.lng;
-      setState(() {
-        gpsOn = Icons.gps_not_fixed;
-      });
-      citySearch = true;
-      refreshUI = true;
-      getLocationData();
-    }
-  }
-
   void _gpsButton() async {
     refreshUI = true;
     citySearch = false;
@@ -232,12 +214,6 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       gpsOn = Icons.gps_fixed;
     });
-  }
-
-  void onError(PlacesAutocompleteResponse response) {
-    homeScaffoldKey.currentState.showSnackBar(
-      SnackBar(content: Text(response.errorMessage)),
-    );
   }
 
   RefreshController _refreshController =
@@ -251,7 +227,6 @@ class _MainScreenState extends State<MainScreen> {
     _refreshController.refreshCompleted();
   }
 
-  PageController controller;
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
@@ -283,8 +258,24 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       IconButton(
                         icon: Icon(Icons.search),
-                        onPressed: () {
-                          _handlePressButton();
+                        onPressed: () async {
+                          var recieved = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CustomSearchScaffold(),
+                            ),
+                          );
+
+                          if (recieved != null) {
+                            citySearch = true;
+                            refreshUI = true;
+                            lat = recieved[0];
+                            lng = recieved[1];
+                            print('data recieved');
+                            print(
+                                'new lat and long = ${recieved[0]} ${recieved[1]}');
+                            await getLocationData();
+                          }
                         },
                       ),
                     ],
@@ -615,8 +606,97 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-//  Classes //
+Future<dynamic> _handlePressButton(Prediction p, ScaffoldState scaffold) async {
+  if (p != null) {
+    PlacesDetailsResponse detail = await _places.getDetailsByPlaceId(p.placeId);
+    double lat = detail.result.geometry.location.lat;
+    double lng = detail.result.geometry.location.lng;
+    return [lat, lng];
+  }
+}
 
+class CustomSearchScaffold extends PlacesAutocompleteWidget {
+  CustomSearchScaffold()
+      : super(
+          apiKey: kGoogleApiKey,
+          sessionToken: Uuid().generateV4(),
+          language: "en",
+          components: [
+            Component(Component.country, "ca"),
+            Component(Component.country, "us"),
+            Component(Component.country, "fr"),
+          ],
+        );
+
+  @override
+  _CustomSearchScaffoldState createState() => _CustomSearchScaffoldState();
+}
+
+class _CustomSearchScaffoldState extends PlacesAutocompleteState {
+  @override
+  Widget build(BuildContext context) {
+    final appBar = AppBar(
+      title: AppBarPlacesAutoCompleteTextField(),
+      backgroundColor: backgroundColor,
+    );
+    final body = PlacesAutocompleteResult(
+      onTap: (p) {
+        var x = _handlePressButton(p, searchScaffoldKey.currentState);
+        Navigator.pop(context, x);
+      },
+      logo: Row(),
+    );
+    return Scaffold(
+      key: searchScaffoldKey,
+      appBar: appBar,
+      body: body,
+      backgroundColor: backgroundColor,
+    );
+  }
+
+  @override
+  void onResponseError(PlacesAutocompleteResponse response) {
+    super.onResponseError(response);
+    searchScaffoldKey.currentState.showSnackBar(
+      SnackBar(content: Text(response.errorMessage)),
+    );
+  }
+
+  // @override
+  // void onResponse(PlacesAutocompleteResponse response) {
+  //   super.onResponse(response);
+  //   if (response != null && response.predictions.isNotEmpty) {
+  //     searchScaffoldKey.currentState.showSnackBar(
+  //       SnackBar(content: Text("Got answer")),
+  //     );
+  //   }
+  // }
+}
+
+class Uuid {
+  final Random _random = Random();
+
+  String generateV4() {
+    // Generate xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx / 8-4-4-4-12.
+    final int special = 8 + _random.nextInt(4);
+
+    return '${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}-'
+        '${_bitsDigits(16, 4)}-'
+        '4${_bitsDigits(12, 3)}-'
+        '${_printDigits(special, 1)}${_bitsDigits(12, 3)}-'
+        '${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}';
+  }
+
+  String _bitsDigits(int bitCount, int digitCount) =>
+      _printDigits(_generateBits(bitCount), digitCount);
+
+  int _generateBits(int bitCount) => _random.nextInt(1 << bitCount);
+
+  String _printDigits(int value, int count) =>
+      value.toRadixString(16).padLeft(count, '0');
+}
+
+//  Classes //
 class HourlyForcast extends StatelessWidget {
   String time, icon, condition;
   int temp;

@@ -3,17 +3,14 @@ import 'dart:math';
 
 const kTemperatureTextStyle = TextStyle(
   fontSize: 50.0,
-  //fontWeight: FontWeight.w600,
   color: Colors.white,
   fontFamily: 'Nunito',
 );
 const kFeelsLikeTextStyle = TextStyle(
   fontSize: 14.0,
-  //fontWeight: FontWeight.w400,
   color: Color(0xFFEEEEEE),
   fontFamily: 'Nunito',
 );
-
 const kWhiteTextStyle = TextStyle(
   fontSize: 14.0,
   fontWeight: FontWeight.w600,
@@ -29,24 +26,10 @@ const windStrength = {
   'Strong': Colors.orange,
   'Gale-force': Colors.red
 };
-const kColorDay = Color(0xFF316dde);
-//const kColorDay = Color(0xFF6b56fd);
-const kColorNight = Color(0xFF2E374D);
 
-const kBackgroundColor = {
-  'ClearD': Color(0xFF2298da),
-  //'clear_night'
-  'PartlyCloudyD': Color(0xFF2298da),
-  //'partly_cloudy_night'
-  'CloudyD': Color(0xFF8A8AA1),
-  //'cloudy_night'
-  'RainyD': Color(0xFF918DFF),
-  //'rainy_night'
-  //'snowy_day'
-  //'snowy_night'
-  //'thunderstorm_day'
-  //'thunderstorm_night'
-};
+//const kColorDay = Color(0xFF316dde);
+const kColorDay = Color(0xFF6b56fd);
+const kColorNight = Color(0xFF2E374D);
 
 const windAngle = {
   'South': (0 * pi / 180),
@@ -68,18 +51,18 @@ const kMainTextStyle = TextStyle(
 const kBlackTextStyle = TextStyle(
   fontSize: 14.0,
   fontFamily: 'Nunito',
-  //fontWeight: FontWeight.w400,
+  color: Colors.black,
 );
+
 const kGreyTextStyle = TextStyle(
   color: const Color(0xFF5E5E5F),
   fontFamily: 'Nunito',
 );
 
-//const kSmallBlackTextStyle = TextStyle(color: Colors.black);
-
 const kTitleTextStyle = TextStyle(
   fontWeight: FontWeight.w600,
   fontFamily: 'Nunito',
+  color: Colors.black,
 );
 
 const kWeatherCondition = {

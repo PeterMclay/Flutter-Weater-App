@@ -6,16 +6,6 @@ import 'package:weatherapp/services/keys.dart';
 
 const apiKey = weatherKey;
 
-class WeatherMethods {
-  WeatherMethods({this.weatherData});
-  dynamic weatherData;
-
-  int getCurrentTemperature() {
-    var temp = weatherData['current']['temp'];
-    return temp.toInt();
-  }
-}
-
 class WeatherData {
   dynamic weatherData;
   bool citySearch;
@@ -31,9 +21,12 @@ class WeatherData {
       longitude = location.longitude;
     }
     Coordinates coordinates = Coordinates(latitude, longitude);
+    print('got coordinates');
     var addresses =
         await Geocoder.local.findAddressesFromCoordinates(coordinates);
+    print('got address');
     var first = addresses.first;
+    print('got first');
     address = first.locality + ', ' + first.adminArea;
     print('locality = ${first.locality}');
     NetworkHelper networkHelper = NetworkHelper(

@@ -14,9 +14,17 @@ class Weather extends StatelessWidget {
     // );
 
     return MaterialApp(
+      theme: ThemeData(
+        fontFamily: 'Nunito',
+        textTheme: Theme.of(context).textTheme.apply(
+              displayColor: Colors.white,
+              bodyColor: Colors.white,
+            ),
+      ),
       initialRoute: MainScreen.id,
       routes: {
-        MainScreen.id: (context) => MainScreen(),
+        '/': (_) => MainScreen(),
+        '/search': (_) => CustomSearchScaffold(),
       },
     );
   }
