@@ -218,6 +218,13 @@ class _MainScreenState extends State<MainScreen> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
+  RefreshController connectionController =
+      RefreshController(initialRefresh: false);
+  void _onConnectionRefresh() {
+    setState(() {});
+    _refreshController.refreshCompleted();
+  }
+
   void _onRefresh() async {
     refreshUI = true;
     var x = await getLocationData();
@@ -598,14 +605,31 @@ class _MainScreenState extends State<MainScreen> {
                         ],
                       ),
                     )
-                  : Center(
-                      child: Container(
-                        color: backgroundColor,
-                        child: RaisedButton(
-                          child: Text('No network, press to refresh'),
-                          onPressed: () {
-                            setState(() {});
-                          },
+                  : SmartRefresher(
+                      controller: _refreshController,
+                      onRefresh: _onConnectionRefresh,
+                      enablePullUp: false,
+                      enablePullDown: true,
+                      header: MaterialClassicHeader(
+                        color: Color(0xFFF8F16C),
+                        backgroundColor: backgroundColor,
+                      ),
+                      child: Center(
+                        child: Container(
+                          color: backgroundColor,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                'assets/images/no_connection.svg',
+                                height: height * 0.10,
+                              ),
+                              SizedBox(
+                                height: 8.0,
+                              ),
+                              Text('Network unavailable, swipe down to refresh')
+                            ],
+                          ),
                         ),
                       ),
                     )
