@@ -312,7 +312,7 @@ class _MainScreenState extends State<MainScreen> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: <Widget>[
-                                    SizedBox(height: 24.0),
+                                    SizedBox(height: 8.0),
                                     Text(
                                       '$address',
                                       style: TextStyle(
@@ -331,7 +331,7 @@ class _MainScreenState extends State<MainScreen> {
                                     SizedBox(height: 40.0),
                                     SvgPicture.asset(
                                       'assets/images/$backgroundImage.svg',
-                                      height: height * 0.10,
+                                      height: height * 0.12,
                                     ),
                                     SizedBox(height: 40),
                                     Row(
@@ -660,6 +660,7 @@ Future<dynamic> _handlePressButton(Prediction p, ScaffoldState scaffold) async {
     PlacesDetailsResponse detail = await _places.getDetailsByPlaceId(p.placeId);
     double lat = detail.result.geometry.location.lat;
     double lng = detail.result.geometry.location.lng;
+    print('lat, long = $lat $lng');
     return [lat, lng];
   }
 }
@@ -670,11 +671,8 @@ class CustomSearchScaffold extends PlacesAutocompleteWidget {
           apiKey: kGoogleApiKey,
           sessionToken: Uuid().generateV4(),
           language: "en",
-          components: [
-            Component(Component.country, "ca"),
-            Component(Component.country, "us"),
-            Component(Component.country, "fr"),
-          ],
+          types: ['(cities)'],
+          //components: kPlaces,
         );
 
   @override

@@ -18,10 +18,14 @@ dependencies:
   http: ^0.12.2
   intl: ^0.16.1
   flutter_google_places: ^0.2.6
-  geocoder: ^0.2.1
+  geocoder:
+    git:
+      url: https://github.com/Eimji/flutter_geocoder.git
+      ref: bc34cfe473bfd1934fe098bb7053248b75200241
   pull_to_refresh: ^1.6.3
   flutter_svg: ^0.19.1
   connectivity: ^2.0.2
+  
   
 dev_dependencies:
   flutter_test:

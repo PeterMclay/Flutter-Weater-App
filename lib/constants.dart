@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_webservice/places.dart';
 import 'dart:math';
 
 const kTemperatureTextStyle = TextStyle(
@@ -122,3 +123,9 @@ const kWeatherCondition = {
   803: ['Cloudy', 'cloudy'],
   804: ['Cloudy', 'cloudy'],
 };
+
+var kPlaces = [
+  Component(Component.country, "af"),
+  Component(Component.country, "al"),
+  Component(Component.country, "dz"),
+];

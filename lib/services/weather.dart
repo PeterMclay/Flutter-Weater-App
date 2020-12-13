@@ -22,9 +22,9 @@ class WeatherData {
     }
     Coordinates coordinates = Coordinates(latitude, longitude);
     print('got coordinates');
-    var addresses =
-        await Geocoder.local.findAddressesFromCoordinates(coordinates);
-    print('got address');
+    var addresses = await Geocoder.google(kGoogleApiKey)
+        .findAddressesFromCoordinates(coordinates);
+    print('got address:');
     var first = addresses.first;
     print('got first');
     address = first.locality + ', ' + first.adminArea;
