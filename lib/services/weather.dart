@@ -143,17 +143,22 @@ class WeatherData {
   }
 
   bool nightOrDayIcon(int index) {
+    int sunSet, sunRise;
     int timeZoneOffset = weatherData['timezone_offset'];
     int currentTime = weatherData['hourly'][index]['dt'] + timeZoneOffset;
-    int sunSet = weatherData['current']['sunset'] + timeZoneOffset;
-    int sunRise =
-        weatherData['current']['sunrise'] + timeZoneOffset + (24 * 60 * 60);
-    if (currentTime > sunSet) {
-      return true;
-    } else if (currentTime > sunSet && currentTime < sunRise) {
-      return true;
+    int nextDayTime = weatherData['daily'][1]['dt'] + timeZoneOffset;
+    if (currentTime < nextDayTime) {
+      sunSet = weatherData['current']['sunset'] + timeZoneOffset;
+      sunRise = weatherData['current']['sunrise'] + timeZoneOffset;
     } else {
+      sunSet = weatherData['daily'][1]['sunset'] + timeZoneOffset;
+      sunRise = weatherData['current'][1]['sunrise'] + timeZoneOffset;
+    }
+
+    if (currentTime < sunSet && currentTime > sunRise) {
       return false;
+    } else {
+      return true;
     }
   }
 
@@ -279,12 +284,25 @@ class WeatherData {
     }
   }
 
-  double getSnowAmount(String type, int index) {
+  double getSnowAmount({String type, int index}) {
     try {
-      var snowAmount = weatherData['$type'][index]['rain']['1h'];
+      var snowAmount = weatherData['$type'][index]['snow']['1h'];
       return snowAmount;
     } catch (e) {
       return 0;
     }
+  }
+
+  String getTotalPrecipAmount() {
+    var rainAmount = weatherData['daily'][0]['rain'];
+    var snowAmount = weatherData['daily'][0]['snow'];
+    if (rainAmount == null) {
+      rainAmount = 0;
+    }
+    if (snowAmount == null) {
+      snowAmount = 0;
+    }
+    String amount = (snowAmount + rainAmount).toStringAsFixed(2);
+    return amount;
   }
 }

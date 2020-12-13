@@ -11,7 +11,6 @@ import 'package:connectivity/connectivity.dart';
 import 'package:weatherapp/main.dart';
 
 GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
-IconData gpsOn = Icons.gps_fixed;
 Color backgroundColor;
 
 class MainScreen extends StatefulWidget {
@@ -24,9 +23,9 @@ final homeScaffoldKey = GlobalKey<ScaffoldState>();
 final searchScaffoldKey = GlobalKey<ScaffoldState>();
 
 class _MainScreenState extends State<MainScreen> {
+  IconData gpsOn = Icons.gps_fixed;
   bool refreshUI;
   bool citySearch = false;
-  //IconData gpsOn = Icons.gps_fixed;
   String address;
   double lat, lng;
   int currentTemp;
@@ -41,6 +40,7 @@ class _MainScreenState extends State<MainScreen> {
   bool isNightTime;
   String wind = 'Calm';
   String angle = 'North East';
+  String totalAmount;
   final List<Precipitation> precipitationEntries = <Precipitation>[];
   final List<HourlyForcast> hourlyEntries = <HourlyForcast>[];
   final List<Wind> windEntries = <Wind>[];
@@ -64,10 +64,12 @@ class _MainScreenState extends State<MainScreen> {
       var x = await weatherData.getLocationData();
       if (x == null) {
         refreshUI = true;
-        //setState(() {});
         return x;
       }
       setState(() {
+        if (citySearch == true) {
+          gpsOn = Icons.gps_off;
+        }
         address = weatherData.getAddress();
         precipitationEntries.clear();
         hourlyEntries.clear();
@@ -77,11 +79,10 @@ class _MainScreenState extends State<MainScreen> {
         feelsLikeTemp = weatherData.getCurrentFeelsLikeTemperature();
         humidity = weatherData.getCurrentHumidity();
         pressure = weatherData.getCurrentPressure();
-        visibilty = weatherData.getCurrentVisibility();
-        uvi = weatherData.getCurrentUVI();
         sunriseSunset = weatherData.getCurrentSunriseSunrset();
         condition = weatherData.getCurrentCondition(type: 'current', index: 0);
         windData = weatherData.getCurrentWindInfo();
+        totalAmount = weatherData.getTotalPrecipAmount();
 
         isNightTime = weatherData.isNightTime();
         if (isNightTime) {
@@ -139,10 +140,16 @@ class _MainScreenState extends State<MainScreen> {
               weatherData.getCurrentCondition(type: 'hourly', index: i);
           String icon;
           if (weatherData.nightOrDayIcon(i)) {
-            icon = kWeatherCondition[condition][1] + '_n';
+            if (kWeatherCondition[condition][1] == 'clear' ||
+                kWeatherCondition[condition][1] == 'partly_cloudy') {
+              icon = kWeatherCondition[condition][1] + '_n';
+            } else {
+              icon = kWeatherCondition[condition][1];
+            }
           } else {
             icon = kWeatherCondition[condition][1];
           }
+
           int temp = weatherData.getFutureTemperature(type: 'hourly', index: i);
           hourlyEntries.add(HourlyForcast(
             time: time,
@@ -156,7 +163,11 @@ class _MainScreenState extends State<MainScreen> {
         for (int i = 1; i <= 15; i++) {
           String time = weatherData.getFutureTime(type: 'hourly', index: i);
           int percent = weatherData.getFuturePop(type: 'hourly', index: i);
-          double amount = weatherData.getRainAmount(type: 'hourly', index: i);
+          double rainAmount =
+              weatherData.getRainAmount(type: 'hourly', index: i);
+          double snowAmount =
+              weatherData.getSnowAmount(type: 'hourly', index: i);
+          double amount = rainAmount + snowAmount;
           String icon;
           if (percent >= 75) {
             icon = '75';
@@ -275,15 +286,11 @@ class _MainScreenState extends State<MainScreen> {
                                       builder: (_) => CustomSearchScaffold(),
                                     ),
                                   );
-
                                   if (recieved != null) {
                                     citySearch = true;
                                     refreshUI = true;
                                     lat = recieved[0];
                                     lng = recieved[1];
-                                    print('data recieved');
-                                    print(
-                                        'new lat and long = ${recieved[0]} ${recieved[1]}');
                                     await getLocationData();
                                   }
                                 },
@@ -305,6 +312,7 @@ class _MainScreenState extends State<MainScreen> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: <Widget>[
+                                    SizedBox(height: 24.0),
                                     Text(
                                       '$address',
                                       style: TextStyle(
@@ -448,7 +456,6 @@ class _MainScreenState extends State<MainScreen> {
                                   topLeft: Radius.circular(30.0),
                                   topRight: Radius.circular(30.0),
                                 ),
-                                //color: Color(0xFFE6E6E5),
                                 color: Colors.white,
                               ),
                               child: Column(
@@ -504,6 +511,8 @@ class _MainScreenState extends State<MainScreen> {
                                       ),
                                     ),
                                   ),
+                                  Text('Total daily volume: ${totalAmount}mm',
+                                      style: kBlackTextStyle),
                                   Divider(
                                     thickness: 1.0,
                                   ),
@@ -584,7 +593,7 @@ class _MainScreenState extends State<MainScreen> {
                                   SizedBox(height: 16.0),
                                   Container(
                                     child: SizedBox(
-                                      height: 300.0,
+                                      height: 400.0,
                                       child: ListView.builder(
                                         padding: EdgeInsets.all(0),
                                         itemCount: dailyForcastEntries.length,
@@ -596,8 +605,6 @@ class _MainScreenState extends State<MainScreen> {
                                       ),
                                     ),
                                   ),
-
-                                  //SizedBox(height: 150.0),
                                 ],
                               ),
                             ),
@@ -783,10 +790,10 @@ class HourlyForcast extends StatelessWidget {
 }
 
 class Precipitation extends StatelessWidget {
-  String time;
-  String icon;
-  int percent;
-  double amount;
+  final String time;
+  final String icon;
+  final int percent;
+  final double amount;
   Precipitation({this.time, this.icon, this.percent, this.amount});
   @override
   Widget build(BuildContext context) {
