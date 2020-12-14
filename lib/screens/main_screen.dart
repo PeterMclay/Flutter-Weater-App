@@ -26,6 +26,7 @@ class _MainScreenState extends State<MainScreen> {
   IconData gpsOn = Icons.gps_fixed;
   bool refreshUI;
   bool citySearch = false;
+  String searchLocation;
   String address;
   double lat, lng;
   int currentTemp;
@@ -70,7 +71,11 @@ class _MainScreenState extends State<MainScreen> {
         if (citySearch == true) {
           gpsOn = Icons.gps_off;
         }
-        address = weatherData.getAddress();
+        if (!citySearch) {
+          address = weatherData.getAddress();
+        } else {
+          address = searchLocation;
+        }
         precipitationEntries.clear();
         hourlyEntries.clear();
         windEntries.clear();
@@ -81,10 +86,13 @@ class _MainScreenState extends State<MainScreen> {
         pressure = weatherData.getCurrentPressure();
         sunriseSunset = weatherData.getCurrentSunriseSunrset();
         condition = weatherData.getCurrentCondition(type: 'current', index: 0);
+        print('through condition');
         windData = weatherData.getCurrentWindInfo();
+        print('through wind data');
         totalAmount = weatherData.getTotalPrecipAmount();
 
         isNightTime = weatherData.isNightTime();
+        print('through is night time');
         if (isNightTime) {
           if (kWeatherCondition[condition][1] == 'clear' ||
               kWeatherCondition[condition][1] == 'partly_cloudy') {
@@ -111,7 +119,6 @@ class _MainScreenState extends State<MainScreen> {
         } else {
           windColor = 'Calm';
         }
-
         //Daily Forcast Entry Builder
         for (int i = 0; i <= 7; i++) {
           String date = weatherData.getFutureTime(type: 'daily', index: i);
@@ -291,6 +298,7 @@ class _MainScreenState extends State<MainScreen> {
                                     refreshUI = true;
                                     lat = recieved[0];
                                     lng = recieved[1];
+                                    searchLocation = recieved[2];
                                     await getLocationData();
                                   }
                                 },
@@ -658,10 +666,23 @@ class _MainScreenState extends State<MainScreen> {
 Future<dynamic> _handlePressButton(Prediction p, ScaffoldState scaffold) async {
   if (p != null) {
     PlacesDetailsResponse detail = await _places.getDetailsByPlaceId(p.placeId);
+    String location = detail.result.formattedAddress;
+    String formattedLocation = '';
+    int commaCount = 0;
+    for (int i = 0; i < location.length; i++) {
+      if (location[i] == ',') {
+        commaCount = commaCount + 1;
+      }
+      if (commaCount < 2) {
+        formattedLocation += location[i];
+      } else {
+        break;
+      }
+    }
+    print('LOCATION: $formattedLocation');
     double lat = detail.result.geometry.location.lat;
     double lng = detail.result.geometry.location.lng;
-    print('lat, long = $lat $lng');
-    return [lat, lng];
+    return [lat, lng, formattedLocation];
   }
 }
 

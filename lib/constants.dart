@@ -123,9 +123,3 @@ const kWeatherCondition = {
   803: ['Cloudy', 'cloudy'],
   804: ['Cloudy', 'cloudy'],
 };
-
-var kPlaces = [
-  Component(Component.country, "af"),
-  Component(Component.country, "al"),
-  Component(Component.country, "dz"),
-];

@@ -19,16 +19,12 @@ class WeatherData {
       await location.getCurrentLocation();
       latitude = location.latitude;
       longitude = location.longitude;
+      Coordinates coordinates = Coordinates(latitude, longitude);
+      var addresses =
+          await Geocoder.local.findAddressesFromCoordinates(coordinates);
+      var first = addresses.first;
+      address = first.locality + ', ' + first.adminArea;
     }
-    Coordinates coordinates = Coordinates(latitude, longitude);
-    print('got coordinates');
-    var addresses = await Geocoder.google(kGoogleApiKey)
-        .findAddressesFromCoordinates(coordinates);
-    print('got address:');
-    var first = addresses.first;
-    print('got first');
-    address = first.locality + ', ' + first.adminArea;
-    print('locality = ${first.locality}');
     NetworkHelper networkHelper = NetworkHelper(
         'https://api.openweathermap.org/data/2.5/onecall?lat=$latitude&lon=$longitude&exclude=minutely&appid=$apiKey&units=metric');
     weatherData = await networkHelper.getData();
@@ -152,7 +148,7 @@ class WeatherData {
       sunRise = weatherData['current']['sunrise'] + timeZoneOffset;
     } else {
       sunSet = weatherData['daily'][1]['sunset'] + timeZoneOffset;
-      sunRise = weatherData['current'][1]['sunrise'] + timeZoneOffset;
+      sunRise = weatherData['daily'][1]['sunrise'] + timeZoneOffset;
     }
 
     if (currentTime < sunSet && currentTime > sunRise) {
