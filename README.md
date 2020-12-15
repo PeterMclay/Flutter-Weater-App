@@ -2,6 +2,10 @@
 
 If you don't think there is to many weather apps in the world, here's another one... Built with Flutter, implemented for Android and IOS.
 
+<p align="center">
+  <img src="images/vid.gif" width="150">
+</p> 
+
 ## Packages Used
 
 * [flutter_google_places](https://pub.dev/packages/flutter_google_places)
