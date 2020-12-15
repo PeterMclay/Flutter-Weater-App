@@ -14,6 +14,7 @@ class Weather extends StatelessWidget {
     // );
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Nunito',
         textTheme: Theme.of(context).textTheme.apply(

@@ -142,7 +142,7 @@ class WeatherData {
     int sunSet, sunRise;
     int timeZoneOffset = weatherData['timezone_offset'];
     int currentTime = weatherData['hourly'][index]['dt'] + timeZoneOffset;
-    int nextDayTime = weatherData['daily'][1]['dt'] + timeZoneOffset;
+    int nextDayTime = weatherData['daily'][1]['dt'] - 43200 + timeZoneOffset;
     if (currentTime < nextDayTime) {
       sunSet = weatherData['current']['sunset'] + timeZoneOffset;
       sunRise = weatherData['current']['sunrise'] + timeZoneOffset;

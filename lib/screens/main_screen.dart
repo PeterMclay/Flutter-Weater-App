@@ -7,8 +7,6 @@ import 'package:weatherapp/services/keys.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math';
-import 'package:connectivity/connectivity.dart';
-import 'package:weatherapp/main.dart';
 
 GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
 Color backgroundColor;

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_webservice/places.dart';
 import 'dart:math';
 
 const kTemperatureTextStyle = TextStyle(
@@ -28,8 +27,8 @@ const windStrength = {
   'Gale-force': Colors.red
 };
 
-//const kColorDay = Color(0xFF316dde);
-const kColorDay = Color(0xFF6b56fd);
+const kColorDay = Color(0xFF316dde);
+//const kColorDay = Color(0xFF6b56fd);
 const kColorNight = Color(0xFF2E374D);
 
 const windAngle = {
