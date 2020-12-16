@@ -1,4 +1,4 @@
-# Flutter-Weater-App
+# Flutter Weater App
 
 If you don't think there is to many weather apps in the world, here's another one... Built with Flutter, implemented for Android and IOS.
 
