@@ -21,6 +21,9 @@ final homeScaffoldKey = GlobalKey<ScaffoldState>();
 final searchScaffoldKey = GlobalKey<ScaffoldState>();
 
 class _MainScreenState extends State<MainScreen> {
+  String units;
+  String unitsSpeed, unitsAmount;
+
   IconData gpsOn = Icons.gps_fixed;
   bool refreshUI;
   bool citySearch = false;
@@ -40,6 +43,7 @@ class _MainScreenState extends State<MainScreen> {
   String wind = 'Calm';
   String angle = 'North East';
   String totalAmount;
+  int wind0;
   final List<Precipitation> precipitationEntries = <Precipitation>[];
   final List<HourlyForcast> hourlyEntries = <HourlyForcast>[];
   final List<Wind> windEntries = <Wind>[];
@@ -47,6 +51,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void initState() {
+    units = 'metric';
     refreshUI = true;
     citySearch = false;
     lat = 0;
@@ -58,8 +63,8 @@ class _MainScreenState extends State<MainScreen> {
   Future getLocationData() async {
     print('Get Location Data Called');
     if (refreshUI) {
-      WeatherData weatherData =
-          WeatherData(citySearch: citySearch, latitude: lat, longitude: lng);
+      WeatherData weatherData = WeatherData(
+          citySearch: citySearch, latitude: lat, longitude: lng, units: units);
       var x = await weatherData.getLocationData();
       if (x == null) {
         refreshUI = true;
@@ -89,6 +94,7 @@ class _MainScreenState extends State<MainScreen> {
         print('through wind data');
         totalAmount = weatherData.getTotalPrecipAmount();
 
+        //Set day or night theme
         isNightTime = weatherData.isNightTime();
         print('through is night time');
         if (isNightTime) {
@@ -103,20 +109,14 @@ class _MainScreenState extends State<MainScreen> {
           backgroundColor = kColorDay;
           backgroundImage = kWeatherCondition[condition][1];
         }
-
-        if (windData[0] >= 50) {
-          windColor = 'Gale-force';
-        } else if (windData[0] < 50 && windData[0] >= 38) {
-          windColor = 'Strong';
-        } else if (windData[0] < 38 && windData[0] >= 29) {
-          windColor = 'Fresh';
-        } else if (windData[0] < 29 && windData[0] >= 20) {
-          windColor = 'Moderate';
-        } else if (windData[0] < 20 && windData[0] >= 6) {
-          windColor = 'Light';
+        if (units == 'imperial') {
+          unitsSpeed = 'mph';
+          unitsAmount = 'in';
         } else {
-          windColor = 'Calm';
+          unitsSpeed = 'km/h';
+          unitsAmount = 'mm';
         }
+
         //Daily Forcast Entry Builder
         for (int i = 0; i <= 7; i++) {
           String date = weatherData.getFutureTime(type: 'daily', index: i);
@@ -187,35 +187,62 @@ class _MainScreenState extends State<MainScreen> {
               time: time.toLowerCase(),
               percent: percent,
               icon: icon,
-              amount: amount));
+              amount: amount,
+              units: unitsAmount));
         }
 
         //Hourly Wind Builder
-        for (int i = 1; i <= 15; i++) {
+        for (int i = 0; i <= 15; i++) {
           String time = weatherData.getFutureTime(type: 'hourly', index: i);
           List windData = weatherData.getFutureWindInfo(index: i);
           int speed = windData[0];
-          String direction = windData[1];
-          String windColor;
-          if (speed >= 50) {
-            windColor = 'Gale-force';
-          } else if (speed < 50 && speed >= 38) {
-            windColor = 'Strong';
-          } else if (speed < 38 && speed >= 29) {
-            windColor = 'Fresh';
-          } else if (speed < 29 && speed >= 20) {
-            windColor = 'Moderate';
-          } else if (speed < 20 && speed >= 6) {
-            windColor = 'Light';
+          if (i == 0) {
+            if (units == 'metric') {
+              wind0 = speed * 3600 ~/ 1000;
+            } else {
+              wind0 = speed;
+            }
           } else {
-            windColor = 'Calm';
+            if (units == 'metric') {
+              speed = speed * 3600 ~/ 1000;
+            }
+            String direction = windData[1];
+            String windColor;
+            if (speed >= 50) {
+              windColor = 'Gale-force';
+            } else if (speed < 50 && speed >= 38) {
+              windColor = 'Strong';
+            } else if (speed < 38 && speed >= 29) {
+              windColor = 'Fresh';
+            } else if (speed < 29 && speed >= 20) {
+              windColor = 'Moderate';
+            } else if (speed < 20 && speed >= 6) {
+              windColor = 'Light';
+            } else {
+              windColor = 'Calm';
+            }
+            windEntries.add(Wind(
+                time: time.toLowerCase(),
+                speed: speed,
+                windColor: windColor,
+                direction: direction,
+                units: unitsSpeed));
           }
-          windEntries.add(Wind(
-              time: time.toLowerCase(),
-              speed: speed,
-              windColor: windColor,
-              direction: direction));
         }
+        if (windData[0] >= 50) {
+          windColor = 'Gale-force';
+        } else if (windData[0] < 50 && windData[0] >= 38) {
+          windColor = 'Strong';
+        } else if (windData[0] < 38 && windData[0] >= 29) {
+          windColor = 'Fresh';
+        } else if (windData[0] < 29 && windData[0] >= 20) {
+          windColor = 'Moderate';
+        } else if (windData[0] < 20 && windData[0] >= 6) {
+          windColor = 'Light';
+        } else {
+          windColor = 'Calm';
+        }
+
         refreshUI = false;
       });
     }
@@ -300,6 +327,33 @@ class _MainScreenState extends State<MainScreen> {
                                     await getLocationData();
                                   }
                                 },
+                              ),
+                              //metric or imperial
+                              PopupMenuButton(
+                                initialValue: units,
+                                offset: Offset(0, 100),
+                                onSelected: (String result) {
+                                  units = result;
+                                  refreshUI = true;
+                                  getLocationData();
+                                },
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<String>>[
+                                  PopupMenuItem(
+                                    value: 'metric',
+                                    child: Text(
+                                      'Metric',
+                                      style: kBlackTextStyle,
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'imperial',
+                                    child: Text(
+                                      'Imperial',
+                                      style: kBlackTextStyle,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                             backgroundColor: backgroundColor,
@@ -396,7 +450,7 @@ class _MainScreenState extends State<MainScreen> {
                                               style: kWhiteTextStyle,
                                             ),
                                             Text(
-                                              '${windData[0]}km/h',
+                                              '$wind0 $unitsSpeed',
                                               style: kFeelsLikeTextStyle,
                                             ),
                                           ],
@@ -517,7 +571,8 @@ class _MainScreenState extends State<MainScreen> {
                                       ),
                                     ),
                                   ),
-                                  Text('Total daily volume: ${totalAmount}mm',
+                                  Text(
+                                      'Total daily volume: $totalAmount $unitsAmount',
                                       style: kBlackTextStyle),
                                   Divider(
                                     thickness: 1.0,
@@ -530,7 +585,7 @@ class _MainScreenState extends State<MainScreen> {
                                   Row(
                                     children: <Widget>[
                                       Text(
-                                        '${windData[0]}',
+                                        '$wind0',
                                         style: TextStyle(
                                           fontSize: 30.0,
                                           color: windStrength[windColor],
@@ -549,7 +604,7 @@ class _MainScreenState extends State<MainScreen> {
                                               height: 20,
                                             ),
                                           ),
-                                          Text('km/h',
+                                          Text('$unitsSpeed',
                                               style: TextStyle(
                                                 color: windStrength[windColor],
                                                 fontFamily: 'Nunito',
@@ -691,7 +746,6 @@ class CustomSearchScaffold extends PlacesAutocompleteWidget {
           sessionToken: Uuid().generateV4(),
           language: "en",
           types: ['(cities)'],
-          //components: kPlaces,
         );
 
   @override
@@ -764,8 +818,8 @@ class Uuid {
 
 //  Classes //
 class HourlyForcast extends StatelessWidget {
-  String time, icon, condition;
-  int temp;
+  final String time, icon, condition;
+  final int temp;
   HourlyForcast({this.time, this.icon, this.temp, this.condition});
   @override
   Widget build(BuildContext context) {
@@ -800,7 +854,6 @@ class HourlyForcast extends StatelessWidget {
             SizedBox(width: 95),
           ],
         ),
-        //VerticalDivider(thickness: 0.5),
       ],
     );
   }
@@ -811,7 +864,8 @@ class Precipitation extends StatelessWidget {
   final String icon;
   final int percent;
   final double amount;
-  Precipitation({this.time, this.icon, this.percent, this.amount});
+  final String units;
+  Precipitation({this.time, this.icon, this.percent, this.amount, this.units});
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -830,7 +884,7 @@ class Precipitation extends StatelessWidget {
               style: kTitleTextStyle,
             ),
             Text(
-              '${amount}mm',
+              '$amount $units',
               style: TextStyle(
                   color: Color(0xFF2CA4CC),
                   fontFamily: 'Nunito',
@@ -845,9 +899,9 @@ class Precipitation extends StatelessWidget {
 }
 
 class Wind extends StatelessWidget {
-  String time, windColor, direction;
-  int speed;
-  Wind({this.time, this.speed, this.direction, this.windColor});
+  final String time, windColor, direction, units;
+  final int speed;
+  Wind({this.time, this.speed, this.direction, this.windColor, this.units});
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -869,7 +923,7 @@ class Wind extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16.0),
-            Text('$speed km/h', style: kTitleTextStyle),
+            Text('$speed $units', style: kTitleTextStyle),
             SizedBox(width: 95),
           ],
         ),

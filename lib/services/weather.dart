@@ -10,8 +10,9 @@ class WeatherData {
   dynamic weatherData;
   bool citySearch;
   double latitude, longitude;
+  String units;
   String address;
-  WeatherData({this.citySearch, this.latitude, this.longitude});
+  WeatherData({this.citySearch, this.latitude, this.longitude, this.units});
 
   Future<dynamic> getLocationData() async {
     if (!citySearch) {
@@ -26,7 +27,7 @@ class WeatherData {
       address = first.locality + ', ' + first.adminArea;
     }
     NetworkHelper networkHelper = NetworkHelper(
-        'https://api.openweathermap.org/data/2.5/onecall?lat=$latitude&lon=$longitude&exclude=minutely&appid=$apiKey&units=metric');
+        'https://api.openweathermap.org/data/2.5/onecall?lat=$latitude&lon=$longitude&exclude=minutely&appid=$apiKey&units=$units');
     weatherData = await networkHelper.getData();
     return weatherData;
   }
@@ -214,7 +215,6 @@ class WeatherData {
 
   List getFutureWindInfo({int index}) {
     var currentWindSpeed = weatherData['hourly'][index]['wind_speed'];
-    currentWindSpeed = (currentWindSpeed * 3600) / 1000;
     int windSpeed = currentWindSpeed.toInt();
 
     int currentWindAngle = weatherData['hourly'][index]['wind_deg'];
