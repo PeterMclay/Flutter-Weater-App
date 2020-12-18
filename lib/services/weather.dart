@@ -26,6 +26,10 @@ class WeatherData {
       var first = addresses.first;
       address = first.locality + ', ' + first.adminArea;
     }
+    print('UNITS =  $units');
+    if (units == null) {
+      return null;
+    }
     NetworkHelper networkHelper = NetworkHelper(
         'https://api.openweathermap.org/data/2.5/onecall?lat=$latitude&lon=$longitude&exclude=minutely&appid=$apiKey&units=$units');
     weatherData = await networkHelper.getData();

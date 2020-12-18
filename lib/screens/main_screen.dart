@@ -6,6 +6,7 @@ import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:weatherapp/services/keys.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 
 GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
@@ -51,23 +52,42 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void initState() {
-    units = 'metric';
     refreshUI = true;
     citySearch = false;
     lat = 0;
     lng = 0;
     backgroundColor = kColorDay;
     super.initState();
+    _loadPreferences();
+  }
+
+  Future _loadPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      units = (prefs.getString('units') ?? 'metric');
+      print('units = $units');
+    });
+  }
+
+  Future _changePreferences(String val) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      units = val;
+      refreshUI = true;
+      prefs.setString('units', units);
+    });
+    getLocationData();
   }
 
   Future getLocationData() async {
+    print('Called, units = $units');
     if (refreshUI) {
       WeatherData weatherData = WeatherData(
           citySearch: citySearch, latitude: lat, longitude: lng, units: units);
       var x = await weatherData.getLocationData();
       if (x == null) {
         refreshUI = true;
-        return x;
+        return null;
       }
       setState(() {
         if (citySearch == true) {
@@ -275,6 +295,7 @@ class _MainScreenState extends State<MainScreen> {
     _refreshController.refreshCompleted();
   }
 
+  //Main Build
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
@@ -328,12 +349,8 @@ class _MainScreenState extends State<MainScreen> {
                               PopupMenuButton(
                                 initialValue: units,
                                 offset: Offset(0, 100),
-                                onSelected: (String result) {
-                                  setState(() {
-                                    units = result;
-                                    refreshUI = true;
-                                  });
-                                  getLocationData();
+                                onSelected: (String result) async {
+                                  await _changePreferences(result);
                                 },
                                 itemBuilder: (BuildContext context) =>
                                     <PopupMenuEntry<String>>[
