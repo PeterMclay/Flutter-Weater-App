@@ -61,7 +61,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future getLocationData() async {
-    print('Get Location Data Called');
     if (refreshUI) {
       WeatherData weatherData = WeatherData(
           citySearch: citySearch, latitude: lat, longitude: lng, units: units);
@@ -89,14 +88,11 @@ class _MainScreenState extends State<MainScreen> {
         pressure = weatherData.getCurrentPressure();
         sunriseSunset = weatherData.getCurrentSunriseSunrset();
         condition = weatherData.getCurrentCondition(type: 'current', index: 0);
-        print('through condition');
         windData = weatherData.getCurrentWindInfo();
-        print('through wind data');
         totalAmount = weatherData.getTotalPrecipAmount();
 
         //Set day or night theme
         isNightTime = weatherData.isNightTime();
-        print('through is night time');
         if (isNightTime) {
           if (kWeatherCondition[condition][1] == 'clear' ||
               kWeatherCondition[condition][1] == 'partly_cloudy') {
@@ -333,8 +329,10 @@ class _MainScreenState extends State<MainScreen> {
                                 initialValue: units,
                                 offset: Offset(0, 100),
                                 onSelected: (String result) {
-                                  units = result;
-                                  refreshUI = true;
+                                  setState(() {
+                                    units = result;
+                                    refreshUI = true;
+                                  });
                                   getLocationData();
                                 },
                                 itemBuilder: (BuildContext context) =>
