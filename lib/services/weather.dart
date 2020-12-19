@@ -28,6 +28,7 @@ class WeatherData {
     }
     print('UNITS =  $units');
     if (units == null) {
+      print('returning null');
       return null;
     }
     NetworkHelper networkHelper = NetworkHelper(

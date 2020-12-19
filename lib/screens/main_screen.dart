@@ -58,34 +58,32 @@ class _MainScreenState extends State<MainScreen> {
     lng = 0;
     backgroundColor = kColorDay;
     super.initState();
-    _loadPreferences();
+    //_loadPreferences();
   }
 
   Future _loadPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      units = (prefs.getString('units') ?? 'metric');
-      print('units = $units');
-    });
+    units = (prefs.getString('units') ?? 'metric');
+    print('_loadPreferences called');
   }
 
   Future _changePreferences(String val) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      units = val;
-      refreshUI = true;
-      prefs.setString('units', units);
-    });
-    getLocationData();
+    units = val;
+    refreshUI = true;
+    prefs.setString('units', units);
   }
 
   Future getLocationData() async {
     print('Called, units = $units');
+    print('refreshUI = $refreshUI');
     if (refreshUI) {
+      await _loadPreferences();
       WeatherData weatherData = WeatherData(
           citySearch: citySearch, latitude: lat, longitude: lng, units: units);
       var x = await weatherData.getLocationData();
       if (x == null) {
+        print('returning null from _getLocation');
         refreshUI = true;
         return null;
       }
@@ -261,6 +259,7 @@ class _MainScreenState extends State<MainScreen> {
 
         refreshUI = false;
       });
+      return 1;
     }
     return 1;
   }
@@ -351,6 +350,7 @@ class _MainScreenState extends State<MainScreen> {
                                 offset: Offset(0, 100),
                                 onSelected: (String result) async {
                                   await _changePreferences(result);
+                                  getLocationData();
                                 },
                                 itemBuilder: (BuildContext context) =>
                                     <PopupMenuEntry<String>>[
