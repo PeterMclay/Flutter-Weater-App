@@ -378,7 +378,7 @@ class _MainScreenState extends State<MainScreen> {
                             pinned: true,
                             stretch: false,
                             primary: true,
-                            expandedHeight: height * 0.75,
+                            expandedHeight: height * 0.70,
                             elevation: 0,
                             shadowColor: null,
                             flexibleSpace: FlexibleSpaceBar(

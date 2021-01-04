@@ -1,0 +1,5 @@
+version: "Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)"
+options: "eb901bb3a94f106fd0a689aecf3b8c13"
+build_time: [1609444236, 452360000]
+inputs:
+  "/Users/petermclay/Documents/GitHub/Flutter-Weater-App/ios/Runner/AppDelegate.swift": [1609430704, 445118690]
