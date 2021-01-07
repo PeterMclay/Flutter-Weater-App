@@ -64,7 +64,6 @@ class _MainScreenState extends State<MainScreen> {
   Future _loadPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     units = (prefs.getString('units') ?? 'metric');
-    print('_loadPreferences called');
   }
 
   Future _changePreferences(String val) async {
@@ -75,15 +74,12 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future getLocationData() async {
-    print('Called, units = $units');
-    print('refreshUI = $refreshUI');
     if (refreshUI) {
       await _loadPreferences();
       WeatherData weatherData = WeatherData(
           citySearch: citySearch, latitude: lat, longitude: lng, units: units);
       var x = await weatherData.getLocationData();
       if (x == null) {
-        print('returning null from _getLocation');
         refreshUI = true;
         return null;
       }
@@ -289,8 +285,6 @@ class _MainScreenState extends State<MainScreen> {
     if (x == null) {
       setState(() {});
     }
-    //await Future.delayed(Duration(milliseconds: 1000));
-    print('onRefresh Called');
     _refreshController.refreshCompleted();
   }
 
@@ -747,7 +741,6 @@ Future<dynamic> _handlePressButton(Prediction p, ScaffoldState scaffold) async {
         break;
       }
     }
-    print('LOCATION: $formattedLocation');
     double lat = detail.result.geometry.location.lat;
     double lng = detail.result.geometry.location.lng;
     return [lat, lng, formattedLocation];

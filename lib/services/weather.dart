@@ -28,7 +28,6 @@ class WeatherData {
     }
     print('UNITS =  $units');
     if (units == null) {
-      print('returning null');
       return null;
     }
     NetworkHelper networkHelper = NetworkHelper(
@@ -134,7 +133,6 @@ class WeatherData {
     int currentTime = weatherData['current']['dt'] + timeZoneOffset;
     int sunsetTime = weatherData['current']['sunset'] + timeZoneOffset;
     int sunRiseTime = weatherData['current']['sunrise'] + timeZoneOffset;
-    print('Current Time:$currentTime Sunset Time:$sunsetTime');
     if (currentTime > sunsetTime) {
       return true;
     } else if (currentTime < sunRiseTime && currentTime < sunsetTime) {
