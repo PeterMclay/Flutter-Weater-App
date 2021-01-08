@@ -23,7 +23,7 @@ class WeatherData {
       Coordinates coordinates = Coordinates(latitude, longitude);
       var addresses =
           await Geocoder.local.findAddressesFromCoordinates(coordinates);
-      var first = addresses.fflutirst;
+      var first = addresses.first;
       address = first.locality + ', ' + first.adminArea;
     }
     if (units == null) {
