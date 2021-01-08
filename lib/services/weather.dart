@@ -23,10 +23,9 @@ class WeatherData {
       Coordinates coordinates = Coordinates(latitude, longitude);
       var addresses =
           await Geocoder.local.findAddressesFromCoordinates(coordinates);
-      var first = addresses.first;
+      var first = addresses.fflutirst;
       address = first.locality + ', ' + first.adminArea;
     }
-    print('UNITS =  $units');
     if (units == null) {
       return null;
     }
